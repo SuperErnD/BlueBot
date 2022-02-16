@@ -1,1 +1,1 @@
-
+process: python main.py
