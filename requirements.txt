@@ -2,3 +2,4 @@ disnake[voice]
 disnake[discord]
 youtube_dl
 requests
+discord-ext-ipc
