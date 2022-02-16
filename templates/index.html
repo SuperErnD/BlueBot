@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Home Page</title>
+    <link rel="stylesheet" type="text/css" href="static/index.css" />
+    <style>
+      button {
+        background-color: #4caf50; /* Green */
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        border-radius: 12px;
+      }
+      button:hover {
+        transform: scale(1.1);
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Добро пожаловать на сайт BlueBot!</h1>
+    <p align="center">
+      {% if not authorized %}
+      <a href="/login"><button>Войти через дискорд!</button></a>
+      {% else %}
+      <a href="/dashboard"><button>Открыть панель управления</button></a>
+      {%endif %}
+    </p>
+    <iframe src="https://canary.discord.com/widget?id=892813166319386655&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+  </body>
+</html>
