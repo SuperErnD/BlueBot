@@ -385,18 +385,18 @@ async def on_member_join(member):
     embed = discord.Embed(title="Welcome",colour=discord.Colour.blue())
     embed.add_field(name="Привет",value=retStr)
     await bot.send_message(channel, embed=embed)
-#@bot.event
-#async def on_command_error(ctx, error):
-    #if isinstance(error, commands.CommandNotFound):
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandNotFound):
 
-        #await ctx.send(embed = discord.Embed(description = f'{ctx.author.name}, команда не найдена!', colour = discord.Color.red()))
-    #if isinstance(error, commands.errors.MissingPermissions):
+        await ctx.send(embed = discord.Embed(description = f'{ctx.author.name}, команда не найдена!', colour = discord.Color.red()))
+    if isinstance(error, commands.errors.MissingPermissions):
 
-        #await ctx.send(embed = discord.Embed(description = f'{ctx.author.name}, вы не имеете права на испольнение команды!', colour = discord.Color.red()))
-        #return
-    #if isinstance(error, commands.MissingRequiredArgument):
-        #await ctx.send(embed = discord.Embed(description = f'{ctx.author.name} вы не указали аргумент какой-то'))
-        #return
+        await ctx.send(embed = discord.Embed(description = f'{ctx.author.name}, вы не имеете права на испольнение команды!', colour = discord.Color.red()))
+        return
+    if isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send(embed = discord.Embed(description = f'{ctx.author.name} вы не указали аргумент какой-то'))
+        return
 @client.command()
 async def server(ctx):
     statuses = [len(list(filter(lambda m: str(m.status) == "online", ctx.guild.members))),
@@ -529,7 +529,7 @@ class Helpbl(discord.ui.View):
     async def myinvite(
         self, button: discord.ui.Button, interaction: discord.MessageInteraction
     ):
-        await interaction.response.send_message("https://discord.com/api/oauth2/authorize?client_id=935590256093331526&permissions=8&scope=bot", ephemeral=True)
+        await interaction.response.send_message("https://discord.com/api/oauth2/authorize?client_id=" + settings['id'] + "&permissions=8&scope=bot", ephemeral=True)
 
     @discord.ui.button(label = 'Сервер поддержки', emoji="🥳", style=ButtonStyle.green, row=2)
     async def supportserver(
@@ -867,7 +867,7 @@ async def unmute(ctx, member: discord.Member=None):
         return
 @bot.command()
 async def invite(ctx):
-    emb = discord.Embed(title = 'Инвайт бота', description='Инвайт бота: https://discord.com/api/oauth2/authorize?client_id=935590256093331526&permissions=8&scope=bot', color=discord.Color.orange())
+    emb = discord.Embed(title = 'Инвайт бота', description='Инвайт бота: https://discord.com/api/oauth2/authorize?client_id=' + settings['id'] + '&permissions=8&scope=bot', color=discord.Color.orange())
     emb.add_field(name = 'Сервер', value = 'Ссылка на сервер бота! : https://discord.gg/bzk5MRDREB')
     await ctx.send(embed = emb)
 
