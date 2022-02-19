@@ -529,7 +529,7 @@ class Helpbl(discord.ui.View):
     async def myinvite(
         self, button: discord.ui.Button, interaction: discord.MessageInteraction
     ):
-        await interaction.response.send_message("https://discord.com/api/oauth2/authorize?client_id=" + settings['id'] + "&permissions=8&scope=bot", ephemeral=True)
+        await interaction.response.send_message("https://discord.com/api/oauth2/authorize?client_id=" + str(settings['id']) + "&permissions=8&scope=bot", ephemeral=True)
 
     @discord.ui.button(label = 'Сервер поддержки', emoji="🥳", style=ButtonStyle.green, row=2)
     async def supportserver(
@@ -558,7 +558,7 @@ async def on_ready():
 
 @bot.command(pass_context=True)
 @commands.has_permissions(administrator=True)
-async def ban(ctx, member: discord.Member, *, reason):
+async def ban(ctx, member: discord.Member, *, reason=None):
     
     await member.ban(reason=reason)
     await ctx.channel.purge(limit=0)
@@ -567,7 +567,7 @@ async def ban(ctx, member: discord.Member, *, reason):
     await ctx.reply(embed = emb)
 @bot.command(pass_context=True)
 @commands.has_permissions(administrator=True)
-async def kick(ctx, member: discord.Member, *, reason):
+async def kick(ctx, member: discord.Member, *, reason=None):
     
     await member.kick(reason=reason)
     await ctx.channel.purge(limit=0)
@@ -575,7 +575,7 @@ async def kick(ctx, member: discord.Member, *, reason):
     emb.add_field(name='✅ Kick пользователя', value='Пользователь {} был забанен! /n по причине {reason}'.format(member.mention))
     await ctx.reply(embed = emb)
 @bot.command()
-async def ban_id(ctx, user_id=None, time1: str=None, reason=None):
+async def ban_id(ctx, user_id=None, time1: str=None,*, reason=None):
     if not user_id:
         await ctx.message.add_reaction("<:error:925385765188419604>")
         Eembed = discord.Embed(description = '❌ **Ошибка! Вы не указали ID пользователя**\n**Аргументы данной команды**\n**[] обязательный аргумент, () необязательный аргумент**\n\n**Gides!ban_id [ID участника] (Длительность бана `w|week|weeks|н|нед|неделя|недели|недель|неделю|d|day|days|д|день|дня|дней|h|hour|hours|ч|час|часа|часов|min|mins|minute|minutes|мин|минута|минуту|минуты|минут|s|sec|secs|second|seconds|c|сек|секунда|секунду|секунды|секунд`)**', color=0x00008b)
@@ -780,7 +780,7 @@ async def leaderboard(ctx):
 
 
 @bot.command()
-async def mute(ctx, member: discord.Member=None, time:str=None, reason=None):
+async def mute(ctx, member: discord.Member=None, time:str=None,*, reason=None):
     guild = ctx.guild
     mutedRole = discord.utils.get(guild.roles, name="MutedBB")
     if not mutedRole:
@@ -867,7 +867,7 @@ async def unmute(ctx, member: discord.Member=None):
         return
 @bot.command()
 async def invite(ctx):
-    emb = discord.Embed(title = 'Инвайт бота', description='Инвайт бота: https://discord.com/api/oauth2/authorize?client_id=' + settings['id'] + '&permissions=8&scope=bot', color=discord.Color.orange())
+    emb = discord.Embed(title = 'Инвайт бота', description='Инвайт бота: https://discord.com/api/oauth2/authorize?client_id=' + str(settings['id']) + '&permissions=8&scope=bot', color=discord.Color.orange())
     emb.add_field(name = 'Сервер', value = 'Ссылка на сервер бота! : https://discord.gg/bzk5MRDREB')
     await ctx.send(embed = emb)
 
@@ -1066,4 +1066,8 @@ class Music(commands.Cog):
             ctx.voice_client.stop()
 bot.add_cog(Music(bot))
 #bot.ipc.start()
-bot.run(settings['token']) # Обращаемся к словарю settings с ключом token, для получения токена
+while True:
+    try:
+        bot.run(settings['token']) # Обращаемся к словарю settings с ключом token, для получения токена
+    except:
+        pass  
