@@ -3,4 +3,6 @@ disnake[discord]
 youtube_dl
 requests
 discord-ext-ipc
-
+quart
+quart_discord
+gunicorn
