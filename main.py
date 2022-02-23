@@ -109,7 +109,22 @@ async def helpgiver(ctx):
     ghelp.add_field(name= 'reroll `#channel_name` `message id`', value = '__Can only be accessed by users with the "Giveaway Host" role.__\nThey must follow the command with the copied message id from the giveaway.', inline = False)
     ghelp.set_footer(text = 'Use the prefix "!" before all commands!')
     await ctx.send(embed = ghelp)
-
+@client.command()
+async def ball(ctx, clovo):
+    clovo = clovo
+    a = random.randint(0, 6)
+    if a == 1:
+        ctx.send('хз')
+    elif a == 2:
+        ctx.send('да')
+    elif a == 3:
+        ctx.send('неа')
+    elif a == 4:
+        ctx.send('наверное')
+    elif a == 5:
+        ctx.send('не советую')
+    elif a == 6:
+        ctx.send('я думаю не стоит')
 
 
 @client.command()
