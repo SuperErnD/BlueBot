@@ -114,17 +114,17 @@ async def ball(ctx, clovo):
     clovo = clovo
     a = random.randint(0, 6)
     if a == 1:
-        ctx.send('хз')
+        await ctx.send('хз')
     elif a == 2:
-        ctx.send('да')
+        await ctx.send('да')
     elif a == 3:
-        ctx.send('неа')
+        await ctx.send('неа')
     elif a == 4:
-        ctx.send('наверное')
+        await ctx.send('наверное')
     elif a == 5:
-        ctx.send('не советую')
+        await ctx.send('не советую')
     elif a == 6:
-        ctx.send('я думаю не стоит')
+        await ctx.send('я думаю не стоит')
 
 
 @client.command()
