@@ -421,18 +421,18 @@ async def on_member_join(member):
     embed = discord.Embed(title="Welcome",colour=discord.Colour.blue())
     embed.add_field(name="Привет",value=retStr)
     await bot.send_message(channel, embed=embed)
-@bot.event
-async def on_command_error(ctx, error):
-    if isinstance(error, commands.CommandNotFound):
+#@bot.event
+#async def on_command_error(ctx, error):
+    #if isinstance(error, commands.CommandNotFound):
 
-        await ctx.send(embed = discord.Embed(description = f'{ctx.author.name}, команда не найдена!', colour = discord.Color.red()))
-    if isinstance(error, commands.errors.MissingPermissions):
+        #await ctx.send(embed = discord.Embed(description = f'{ctx.author.name}, команда не найдена!', colour = discord.Color.red()))
+    #if isinstance(error, commands.errors.MissingPermissions):
 
-        await ctx.send(embed = discord.Embed(description = f'{ctx.author.name}, вы не имеете права на испольнение команды!', colour = discord.Color.red()))
-        return
-    if isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send(embed = discord.Embed(description = f'{ctx.author.name} вы не указали аргумент какой-то'))
-        return
+        #await ctx.send(embed = discord.Embed(description = f'{ctx.author.name}, вы не имеете права на испольнение команды!', colour = discord.Color.red()))
+        #return
+    #if isinstance(error, commands.MissingRequiredArgument):
+        #await ctx.send(embed = discord.Embed(description = f'{ctx.author.name} вы не указали аргумент какой-то'))
+        #return
 @client.command()
 async def server(ctx):
     statuses = [len(list(filter(lambda m: str(m.status) == "online", ctx.guild.members))),
