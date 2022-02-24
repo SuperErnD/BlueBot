@@ -42,7 +42,7 @@ ytdl_format_options = {
 ffmpeg_options = {"options": "-vn"}
 
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
-translator = Translator()
+from translate import Translator
 
 class YTDLSource(discord.PCMVolumeTransformer):
     def __init__(self, source, *, data, volume=0.5):
@@ -130,6 +130,13 @@ async def ball(ctx, clovo):
 async def translate(ctx, lang=None, text=None):
     text = text
     lang = lang
+    if not lang:
+        await ctx.send('Вы не указали язык!')
+        return
+    if not text:
+        await ctx.send('Вы не указали текст!')
+        return
+    translator = Translator(to_lang=lang)
     a = translator.translate(text, dest=lang)
     await ctx.send(a)
 @client.command()
