@@ -18,7 +18,7 @@ import sys
 import random
 import asyncio
 import json
-
+from googletrans import *
 import asyncio
 import random
 import datetime
@@ -42,7 +42,7 @@ ytdl_format_options = {
 ffmpeg_options = {"options": "-vn"}
 
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
-
+translator = Translator()
 
 class YTDLSource(discord.PCMVolumeTransformer):
     def __init__(self, source, *, data, volume=0.5):
@@ -126,7 +126,12 @@ async def ball(ctx, clovo):
     elif a == 6:
         await ctx.send('я думаю не стоит')
 
-
+@client.command()
+async def translate(ctx, lang=None, text=None):
+    text = text
+    lang = lang
+    a = translator.translate(text, dest=lang)
+    await ctx.send(a)
 @client.command()
 @commands.has_permissions(administrator=True)
 async def giveaway(ctx):
