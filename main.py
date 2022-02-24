@@ -18,7 +18,7 @@ import sys
 import random
 import asyncio
 import json
-from googletrans import *
+
 import asyncio
 import random
 import datetime
