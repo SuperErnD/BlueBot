@@ -4,3 +4,4 @@ youtube_dl
 requests
 discord-ext-ipc
 pymongo
+StringProgressBar
