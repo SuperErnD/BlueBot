@@ -32,7 +32,7 @@ async def addxp(message, member: discord.Member):
 			},{
   				'$set': {
     			'lvls': member2['lvls'] + 1,
-    			'dolevel': 0
+    			'dolevel': member2['dolevel'] + 1
   			}
 			}, upsert=False)
 			print('Registred user id: ' + str(a) + '!')
