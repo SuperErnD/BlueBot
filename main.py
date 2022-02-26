@@ -112,8 +112,9 @@ async def js(ctx, *, code):
     try:
         a = js2py.eval_js(code)
         await ctx.send(a)
-    except:
-        await ctx.send('[ERROR] - JavaScipt compiling to Python ERROR \n try again!')
+    except Exception as error:
+        await ctx.send('[ERROR] - JavaScipt compiling to Python ERROR \n' + error)
+        print(error)
 @bot.event
 async def on_message(message):
     author = message.author
