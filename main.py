@@ -392,7 +392,7 @@ class HelpList(discord.ui.Select):
                 label="Модерация", description="Команды модерации", emoji="🛠"
             ),
             discord.SelectOption(
-                label="Веселое!", description="Команды веселости!", emoji="😄"
+                label="Веселое!/Разное!", description="Команды веселости!", emoji="😄"
             ),
             discord.SelectOption(
                 label="Экономика", description="Экономика", emoji="💸"
@@ -418,14 +418,14 @@ class HelpList(discord.ui.Select):
         # Select object, and the values attribute gets a list of the user's
         # selected options. We only want the first one.
         if self.values[0] == 'Аватары':
-            await interaction.response.send_message(embed=discord.Embed(title='Команды', description='`!blue_avatar` \n `!pink_avatar` \n `!multi_avatar` \n `!yellow_avatar` \n `!red_avatar` \n `!grey_avatar` \n `!green_avatar`'), ephemeral=True)
+            await interaction.response.send_message(embed=discord.Embed(title='Команды', description='`b!blue_avatar` \n `b!pink_avatar` \n `b!multi_avatar` \n `b!yellow_avatar` \n `b!red_avatar` \n `b!grey_avatar` \n `b!green_avatar`'), ephemeral=True)
         if self.values[0] == 'Модерация':
-            await interaction.response.send_message(embed=discord.Embed(title='Команды', description="Команды модерации:\n`!ban`\n`!mute`\n`!unban`\n`!kick`\n`!ping`\n`!unmute\n`!ver`"), ephemeral=True)
-        if self.values[0] == 'Веселое!':
-            await interaction.response.send_message(embed=discord.Embed(title='Команды', description='`!hello`\n`!avatar`\n`!dog`\n`!fox`\n`!cat`\n`!panda`'), ephemeral=True)
+            await interaction.response.send_message(embed=discord.Embed(title='Команды', description="Команды модерации:\n`b!ban`\n`b!mute`\n`b!unban`\n`b!kick`\n`b!ping`\n`b!unmute\n`b!ver`"), ephemeral=True)
+        if self.values[0] == 'Веселое!/Разное!':
+            await interaction.response.send_message(embed=discord.Embed(title='Команды', description='`b!hello`\n`b!avatar`\n`b!dog`\n`b!fox`\n`b!cat`\n`b!panda`\n`b!rank`\n'), ephemeral=True)
         #await interaction.response.send_message(f"Your favourite colour is {self.values[0]}")
         if self.values[0] == 'Экономика':
-            await interaction.response.send_message(embed=discord.Embed(title='Команды', description='Ты экономист!) \n`!balance`\n`!with`\n`!dep`'), ephemeral=True)
+            await interaction.response.send_message(embed=discord.Embed(title='Команды', description='Ты экономист!) \n`b!balance`\n`b!with`\n`b!dep`'), ephemeral=True)
 class Helpbl(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
