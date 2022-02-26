@@ -1,1 +1,7 @@
-gAAAAABiGmHcmCApAbRDHZSa22ngnEcbLtuCSXyJHgzvN3xIAIyMmgF7bsQB4OlOPHcXZ5YZvYP1ZM6_B14LwJd0dR2SeNiqIKLu96N77IX8T6BWbhZREVRcUwqYSnA6FJPdKQ_MyJ3B5am4zPxuEhgfquL5OH0vSoGOEGq1YStMpCJ4TP0oXBVfMRH5DZaezrg_sar29t3EDrILWYuSA4sRtYHo0JlhhMudgaPlWPG3Ei73gSIVv97VqN9b5Sg3xmJc4PqwjRSY1Rzv_oLItaCE_tq9lEbSOw_oExr1c3P9T8eH5SN5kDjAxuhvl2LjRVJrNsqHnyHQUUTzOFlXxrkj9swCHyk7iQ==
+settings = {
+    'token': 'ODc0OTU3NDY4NDcwNTAxMzg2.YROhpA.tWxXhks6gnPRmOQsI8D4WN3l0kQ',
+    'bot': 'BlueBot',
+    'id': 874957468470501386,
+    'prefix': 'b!',
+    'version': 'v2.2'
+}
