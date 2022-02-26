@@ -87,7 +87,10 @@ intents.members = True
 bot = MyBot(command_prefix = settings['prefix'], intents=intents, pm_help=True, case_insensitive=True)#, intents = discord.Intents.default())
 bot.remove_command('help')
 client = bot
-    
+@bot.command()
+async def python(ctx, *, code):
+    code = code
+    await ctx.send(eval(code))
 @bot.event
 async def on_message(message):
     author = message.author
