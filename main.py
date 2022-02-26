@@ -106,7 +106,7 @@ async def rank(ctx, author=None):
     level = str(information['lvls'])
     dolevel = information['dolevel']
     total = 1000
-    bardata = progressBar.filledBar(total, dolevel)
+    bardata = progressBar.filledBar(total, dolevel, size=10)
     print(author)
     print(bardata[0])
     print(bardata[1])
