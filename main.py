@@ -27,7 +27,7 @@ import os
 import youtube_dl
 import json
 import lvls
-import js2py
+
 from StringProgressBar import progressBar
 youtube_dl.utils.bug_reports_message = lambda: ""
 from discord.enums import ButtonStyle
@@ -106,15 +106,10 @@ async def python(ctx, *, code):
         await ctx.send(str(result))
     except Exception as error:
         await ctx.send(str(error))
-@bot.command()
-async def js(ctx, *, code):
-    code = code
-    try:
-        a = js2py.eval_js(code)
-        await ctx.send(a)
-    except Exception as error:
-        await ctx.send('[ERROR] - JavaScipt compiling to Python ERROR \n' + error)
-        print(error)
+
+
+
+
 @bot.event
 async def on_message(message):
     author = message.author
