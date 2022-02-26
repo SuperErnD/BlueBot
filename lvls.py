@@ -32,7 +32,7 @@ async def addxp(message, member: discord.Member):
 		},{
   			'$set': {
     		'lvls': member2['lvls'] + 1,
-    		'dolevel': 0
+    		'dolevel': null
   		}
 		}, upsert=False)
 
