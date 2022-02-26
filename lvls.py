@@ -37,7 +37,7 @@ async def addxp(message, member: discord.Member):
 		}, upsert=False)
 
 		await message.channel.send('Поздравляем у вас ' + str(member2['lvls']) + ' уровень!')
-		return
+		
 	xpcollection.update_one({
   	'user': a
 	},{
