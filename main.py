@@ -98,7 +98,7 @@ async def python(ctx, *, code):
             await ctx.send('Херушки тебе а не токен!')
             
             return
-        elif code == 'exit(1)' or code == 'exit()':
+        elif code == 'exit(1)' or code == 'exit()' or code == 'exit(2)':
             await ctx.send('Эййй не выключай бота!')
             return
         result = exec(code)
