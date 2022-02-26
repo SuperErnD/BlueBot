@@ -94,7 +94,7 @@ async def python(ctx, *, code):
         result = eval(code)
         
         await ctx.send(str(result))
-    except as error:
+    except Exception as error:
         await ctx.send(str(error))
 @bot.event
 async def on_message(message):
