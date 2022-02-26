@@ -848,4 +848,12 @@ class Music(commands.Cog):
 bot.add_cog(Music(bot))
 
 #bot.ipc.start()
-bot.run(settings['token']) # Обращаемся к словарю settings с ключом token, для получения токена
+while True:
+    try:
+        bot.run(settings['token']) # Обращаемся к словарю settings с ключом token, для получения токена
+        start = True
+        if start == True:
+            continue
+    except:
+        pass
+    
