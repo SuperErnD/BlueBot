@@ -91,6 +91,10 @@ client = bot
 async def python(ctx, *, code):
     code = code
     try:
+        if code == 'open("config.py").read()':
+            await ctx.send('Херушки тебе а не токен!')
+            
+            return
         result = eval(code)
         
         await ctx.send(str(result))
