@@ -3,4 +3,4 @@ disnake[discord]
 youtube_dl
 requests
 discord-ext-ipc
-translate
+pymongo
