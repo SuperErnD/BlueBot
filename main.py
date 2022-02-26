@@ -27,6 +27,7 @@ import os
 import youtube_dl
 import json
 import lvls
+import js2py
 from StringProgressBar import progressBar
 youtube_dl.utils.bug_reports_message = lambda: ""
 from discord.enums import ButtonStyle
