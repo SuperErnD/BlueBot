@@ -8,7 +8,7 @@ async def addxp(message, member: discord.Member):
 	member2 = xpcollection.find_one({'user': id})
 	print(member2)
 	if member2 == None:
-		data = {'user': id, 'xp': 0, 'dolevel' : 0}
+		data = {'user': id, 'lvls': 0, 'dolevel' : 0}
 		memberid = xpcollection.insert_one(data).inserted_id
 		return
 	a = member2["user"]
