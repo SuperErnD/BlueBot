@@ -18,12 +18,14 @@ import sys
 import random
 import asyncio
 import json
-
 import asyncio
 import random
 import datetime
 import os
 import youtube_dl
+import json
+import lvls
+from StringProgressBar import progressBar
 youtube_dl.utils.bug_reports_message = lambda: ""
 from discord.enums import ButtonStyle
 ytdl_format_options = {
@@ -42,7 +44,7 @@ ytdl_format_options = {
 ffmpeg_options = {"options": "-vn"}
 
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
-from translate import Translator
+
 
 class YTDLSource(discord.PCMVolumeTransformer):
     def __init__(self, source, *, data, volume=0.5):
@@ -80,15 +82,40 @@ class MyBot(commands.Bot):
     async def on_ipc_error(self, endpoint, error):
         """Called upon an error being raised within an IPC route"""
         print(endpoint, "raised", error)
-intents = discord.Intents.default()
+intents = discord.Intents.all()
 intents.members = True
 bot = MyBot(command_prefix = settings['prefix'], intents=intents, pm_help=True, case_insensitive=True)#, intents = discord.Intents.default())
-
-bot.remove_command("help")
+bot.remove_command('help')
 client = bot
+    
+@bot.event
+async def on_message(message):
+    author = message.author
+    if author == client.user:
+        return
+
+    
+    await lvls.addxp(message, author)
+    await bot.process_commands(message)
+@bot.command()
+async def rank(ctx, author=None):
+    if author == None:
+        author = ctx.message.author
+        authorid = author.id
+    else:
+        authorid = author.id
+    information = lvls.open_user(authorid)
+    level = str(information['lvls'])
+    dolevel = information['dolevel']
+    total = 1000
+    bardata = progressBar.filledBar(total, dolevel)
+    print(author)
+    print(bardata[0])
+    print(bardata[1])
+    author = str(author)
+    await ctx.send(embed=discord.Embed(title='Ранги - уровни', description='Вы ' + author + ' имеете \n ' + level + ' уровень и вам осталось до следущего уровня(в прогресс баре!) \n' + bardata[0] + '\n в процентах это ' + str(bardata[1]) + '%'))
 
 @client.command()
-
 async def number(ctx, num : int):
     a = random.randint(1, 200)
     if num == a:
@@ -109,36 +136,9 @@ async def helpgiver(ctx):
     ghelp.add_field(name= 'reroll `#channel_name` `message id`', value = '__Can only be accessed by users with the "Giveaway Host" role.__\nThey must follow the command with the copied message id from the giveaway.', inline = False)
     ghelp.set_footer(text = 'Use the prefix "!" before all commands!')
     await ctx.send(embed = ghelp)
-@client.command()
-async def ball(ctx, clovo):
-    clovo = clovo
-    a = random.randint(0, 6)
-    if a == 1:
-        await ctx.send('хз')
-    elif a == 2:
-        await ctx.send('да')
-    elif a == 3:
-        await ctx.send('неа')
-    elif a == 4:
-        await ctx.send('наверное')
-    elif a == 5:
-        await ctx.send('не советую')
-    elif a == 6:
-        await ctx.send('я думаю не стоит')
 
-@client.command()
-async def translate(ctx, lang=None, text=None):
-    text = text
-    lang = lang
-    if not lang:
-        await ctx.send('Вы не указали язык!')
-        return
-    if not text:
-        await ctx.send('Вы не указали текст!')
-        return
-    translator = Translator(to_lang=lang)
-    a = translator.translate(text, dest=lang)
-    await ctx.send(a)
+
+
 @client.command()
 @commands.has_permissions(administrator=True)
 async def giveaway(ctx):
@@ -235,23 +235,7 @@ async def reroll(ctx, channel: discord.TextChannel, id : int):
 @bot.ipc.route()
 async def get_guild_count(data):
     return len(bot.guilds) # returns the len of the guilds to the client
-@client.command()
-async def orel(ctx, rr=None):
-    a = random.randint(1, 2)
-    print(a)
-    if rr == 'орел':
-        rr = 1
-        if a == rr:
-            ctx.send('Вы выиграли!!')
-        else:
-            ctx.send('Вы не выиграли к сожалению...')
-    if rr == 'решка':
-        rr = 2
-        if a == rr:
-            ctx.send('Вы выиграли!!')
-        else:
-            ctx.send('Вы не выиграли к сожалению...')
-            
+
 @bot.ipc.route()
 async def get_guild_ids(data):
     final = []
@@ -273,132 +257,6 @@ async def get_guild(data):
     return guild_data
 
 
-async def open_bank(user):
-    columns = ["wallet", "bank"] # You can add more Columns in it !
-
-    db = sqlite3.connect(file_name)
-    cursor = db.cursor()
-    cursor.execute(f"SELECT * FROM economy WHERE userID = {user.id}")
-    data = cursor.fetchone()
-
-    if data is None:
-        cursor.execute(f"INSERT INTO economy(userID) VALUES({user.id})")
-        db.commit()
-
-        for name in columns:
-            cursor.execute(f"UPDATE economy SET {name} = 0 WHERE userID = {user.id}")
-        db.commit()
-
-        cursor.execute(f"UPDATE economy SET wallet = 5000 WHERE userID = {user.id}")
-        db.commit()
-
-    cursor.close()
-    db.close()
-
-
-async def get_bank_data(user):
-    db = sqlite3.connect(file_name)
-    cursor = db.cursor()
-    cursor.execute(f"SELECT * FROM economy WHERE userID = {user.id}")
-    users = cursor.fetchone()
-
-    cursor.close()
-    db.close()
-
-    return users
-
-
-async def update_bank(user, amount=0, mode="wallet"):
-    db = sqlite3.connect(file_name)
-    cursor = db.cursor()
-
-    cursor.execute(f"SELECT * FROM economy WHERE userID = {user.id}")
-    data = cursor.fetchone()
-    if data is not None:
-        cursor.execute(f"UPDATE economy SET {mode} = {mode} + {amount} WHERE userID = {user.id}")
-        db.commit()
-
-    cursor.execute(f"SELECT {mode} FROM economy WHERE userID = {user.id}")
-    users = cursor.fetchone()
-
-    cursor.close()
-    db.close()
-
-    return users
-
-
-async def get_lb():
-    db = sqlite3.connect(file_name)
-    cursor = db.cursor()
-
-    cursor.execute("SELECT userID, wallet + bank FROM economy ORDER BY wallet + bank DESC")
-    users = cursor.fetchall()
-
-    cursor.close()
-    db.close()
-
-    return users
-
-
-shop_items = [
-    {"name": "watch", "cost": 100, "id": 1, "info": "It's a watch"},
-    {"name": "mobile", "cost": 1000, "id": 2, "info": "It's a mobile"},
-    {"name": "laptop", "cost": 10000, "id": 3, "info": "It's a laptop"}
-    # You can add your items here ...
-]
-
-
-async def open_inv(user):
-    db = sqlite3.connect(file_name)
-    cursor = db.cursor()
-
-    cursor.execute(f"SELECT * FROM inventory WHERE userID = {user.id}")
-    data = cursor.fetchone()
-
-    if data is None:
-        cursor.execute(f"INSERT INTO inventory(userID) VALUES({user.id})")
-
-        for item in shop_items:
-            item_name = item["name"]
-            cursor.execute(f"UPDATE inventory SET `{item_name}` = 0 WHERE userID = {user.id}")
-
-        db.commit()
-
-    cursor.close()
-    db.close()
-
-
-async def get_inv_data(user):
-    db = sqlite3.connect(file_name)
-    cursor = db.cursor()
-
-    cursor.execute(f"SELECT * FROM inventory WHERE userID = {user.id}")
-    users = cursor.fetchone()
-
-    cursor.close()
-    db.close()
-
-    return users
-
-
-async def update_inv(user, amount: int, mode):
-    db = sqlite3.connect(file_name)
-    cursor = db.cursor()
-
-    cursor.execute(f"SELECT * FROM inventory WHERE userID = {user.id}")
-    data = cursor.fetchone()
-
-    if data is not None:
-        cursor.execute(f"UPDATE inventory SET `{mode}` = `{mode}` + {amount} WHERE userID = {user.id}")
-        db.commit()
-
-    cursor.execute(f"SELECT `{mode}` FROM inventory WHERE userID = {user.id}")
-    users = cursor.fetchone()
-
-    cursor.close()
-    db.close()
-
-    return users
 
 @bot.command()
 async def avatar(ctx, *,  avamember : discord.Member=None):
@@ -554,14 +412,14 @@ class HelpList(discord.ui.Select):
         # Select object, and the values attribute gets a list of the user's
         # selected options. We only want the first one.
         if self.values[0] == 'Аватары':
-            await interaction.response.send_message(embed=discord.Embed(title='Команды', description='`b!blue_avatar` \n `b!pink_avatar` \n `b!multi_avatar` \n `b!yellow_avatar` \n `b!red_avatar` \n `b!grey_avatar` \n `b!green_avatar`'), ephemeral=True)
+            await interaction.response.send_message(embed=discord.Embed(title='Команды', description='`!blue_avatar` \n `!pink_avatar` \n `!multi_avatar` \n `!yellow_avatar` \n `!red_avatar` \n `!grey_avatar` \n `!green_avatar`'), ephemeral=True)
         if self.values[0] == 'Модерация':
-            await interaction.response.send_message(embed=discord.Embed(title='Команды', description="Команды модерации:\n`b!ban`\n`b!mute`\n`b!unban`\n`b!kick`\n`b!ping`\n`b!unmute\n`b!ver`"), ephemeral=True)
+            await interaction.response.send_message(embed=discord.Embed(title='Команды', description="Команды модерации:\n`!ban`\n`!mute`\n`!unban`\n`!kick`\n`!ping`\n`!unmute\n`!ver`"), ephemeral=True)
         if self.values[0] == 'Веселое!':
-            await interaction.response.send_message(embed=discord.Embed(title='Команды', description='`b!hello`\n`b!avatar`\n`b!dog`\n`b!fox`\n`b!cat`\n`b!panda`'), ephemeral=True)
+            await interaction.response.send_message(embed=discord.Embed(title='Команды', description='`!hello`\n`!avatar`\n`!dog`\n`!fox`\n`!cat`\n`!panda`'), ephemeral=True)
         #await interaction.response.send_message(f"Your favourite colour is {self.values[0]}")
         if self.values[0] == 'Экономика':
-            await interaction.response.send_message(embed=discord.Embed(title='Команды', description='Ты экономист!) \n`b!balance`\n`b!with`\n`b!dep`'), ephemeral=True)
+            await interaction.response.send_message(embed=discord.Embed(title='Команды', description='Ты экономист!) \n`!balance`\n`!with`\n`!dep`'), ephemeral=True)
 class Helpbl(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
@@ -572,7 +430,7 @@ class Helpbl(discord.ui.View):
     async def myinvite(
         self, button: discord.ui.Button, interaction: discord.MessageInteraction
     ):
-        await interaction.response.send_message("https://discord.com/api/oauth2/authorize?client_id=" + str(settings['id']) + "&permissions=8&scope=bot", ephemeral=True)
+        await interaction.response.send_message("https://discord.com/api/oauth2/authorize?client_id=935590256093331526&permissions=8&scope=bot", ephemeral=True)
 
     @discord.ui.button(label = 'Сервер поддержки', emoji="🥳", style=ButtonStyle.green, row=2)
     async def supportserver(
@@ -588,20 +446,17 @@ async def buttons(ctx):
     # This is how the command would look like: https://i.imgur.com/ZYdX1Jw.png
 
 
+
 @bot.event
 async def on_ready():
     await bot.change_presence(status=discord.Status.online, activity=discord.Game(name="!help | " + str(len(bot.guilds)) + " серверов"))
     await bot.ipc.start()
-
-
-
-
     print("Bot is ready!")
     print('Im at {bot.user.name} and {bot.user.id}')
 
 @bot.command(pass_context=True)
 @commands.has_permissions(administrator=True)
-async def ban(ctx, member: discord.Member, *, reason=None):
+async def ban(ctx, member: discord.Member, *, reason):
     
     await member.ban(reason=reason)
     await ctx.channel.purge(limit=0)
@@ -610,7 +465,7 @@ async def ban(ctx, member: discord.Member, *, reason=None):
     await ctx.reply(embed = emb)
 @bot.command(pass_context=True)
 @commands.has_permissions(administrator=True)
-async def kick(ctx, member: discord.Member, *, reason=None):
+async def kick(ctx, member: discord.Member, *, reason):
     
     await member.kick(reason=reason)
     await ctx.channel.purge(limit=0)
@@ -618,7 +473,7 @@ async def kick(ctx, member: discord.Member, *, reason=None):
     emb.add_field(name='✅ Kick пользователя', value='Пользователь {} был забанен! /n по причине {reason}'.format(member.mention))
     await ctx.reply(embed = emb)
 @bot.command()
-async def ban_id(ctx, user_id=None, time1: str=None,*, reason=None):
+async def ban_id(ctx, user_id=None, time1: str=None, reason=None):
     if not user_id:
         await ctx.message.add_reaction("<:error:925385765188419604>")
         Eembed = discord.Embed(description = '❌ **Ошибка! Вы не указали ID пользователя**\n**Аргументы данной команды**\n**[] обязательный аргумент, () необязательный аргумент**\n\n**Gides!ban_id [ID участника] (Длительность бана `w|week|weeks|н|нед|неделя|недели|недель|неделю|d|day|days|д|день|дня|дней|h|hour|hours|ч|час|часа|часов|min|mins|minute|minutes|мин|минута|минуту|минуты|минут|s|sec|secs|second|seconds|c|сек|секунда|секунду|секунды|секунд`)**', color=0x00008b)
@@ -669,161 +524,11 @@ async def unban(ctx, *, member):
         await ctx.reply(embed = emb)
         return
 
-@bot.command(aliases=["bal"])
-@commands.guild_only()
-async def balance(ctx):
-    user = ctx.author
-
-    await open_bank(user)
-
-    users = await get_bank_data(user)
-
-    wallet_amt = users[1]
-    bank_amt = users[2]
-
-    net_amt = int(wallet_amt + bank_amt)
-
-    em = discord.Embed(
-            title= f"{user.name}'s Balance",
-            description= f"Wallet: {wallet_amt}\nBank: {bank_amt}",
-            color=discord.Color(0x00ff00)
-        )
-
-    await ctx.send(embed=em)
-
-
-@bot.command(aliases=["with"])
-@commands.guild_only()
-async def withdraw(ctx, *,amount= None):
-    user = ctx.author
-    await open_account(user)
-
-    users = await get_bank_data(user)
-
-    bank_amt = users[2]
-
-    if amount.lower() == "all" or amount.lower() == "max":
-        await update_bank(user, +1*bank_amt)
-        await update_bank(user, -1*bank_amt, "bank")
-        await ctx.send(f"{user.mention} you withdrew {bank_amt} in your wallet")
-
-    bank = users[1]
-
-    amount = int(amount)
-
-    if amount > bank:
-        await ctx.send(f"{user.mention} You don't have that enough money!")
-        return
-
-    if amount < 0:
-        await ctx.send(f"{user.mention} enter a valid amount !")
-        return
-
-    await update_bank(user, +1 * amount)
-    await update_bank(user, -1 * amount, "bank")
-
-    await ctx.send(f"{user.mention} you withdrew **{amount}** from your **Bank!**")
-
-#@bot.command()
-#async def create_table(ctx):
-    #db = sqlite3.connect(file_name)
-    #cursor = db.cursor()
-    
-    #cols = ["wallet", "bank"] # You can add as many as columns in this !!!
-    
-    #cursor.execute("""CREATE TABLE economy(userID BIGINT)""")
-    #db.commit()
-    
-    #for col in cols:
-        #cursor.execute(f"ALTER TABLE economy ADD COLUMN {col}")
-
-    #db.commit()
-
-    #cursor.close()
-    #db.close()
-
-    #await ctx.send("Table created successfully !")
-
-@bot.command(aliases=["dep"])
-@commands.guild_only()
-async def deposit(ctx, *,amount= None):
-    user = ctx.author
-    await open_account(user)
-
-    users = await get_bank_data(user)
-
-    wallet_amt = users[1]
-
-    if amount.lower() == "all" or amount.lower() == "max":
-        await update_bank(user, -1*wallet_amt)
-        await update_bank(user, +1*wallet_amt, "bank")
-        await ctx.send(f"{user.mention} you withdrew {wallet_amt} in your wallet")
-
-    amount = int(amount)
-
-    if amount > wallet_amt:
-        await ctx.send(f"{user.mention} You don't have that enough money!")
-        return
-
-    if amount < 0:
-        await ctx.send(f"{user.mention} enter a valid amount !")
-        return
-
-    await update_bank(user, -1 * amount)
-    await update_bank(user, +1 * amount, "bank")
-
-    await ctx.send(f"{user.mention} you withdrew **{amount}** from your **Bank!**")
-
-@bot.command(aliases=["lb"])
-#@commands.guild_only(aliases=["lb"])
-async def leaderboard(ctx):
-    user = ctx.author
-    await open_account(user)
-
-    users = await get_bank_data(user)
-
-    data = []
-    index = 1
-
-    for member in users:
-        if index > 10:
-            break
-
-        member_name = self.bot.get_user(member[0])
-        member_amt = member[1]
-
-        if index == 1:
-            msg1 = f"**🥇 `{member_name}` -- {member_amt}**"
-            data.append(msg1)
-
-        if index == 2:
-            msg2 = f"**🥈 `{member_name}` -- {member_amt}**"
-            data.append(msg2)
-
-        if index == 3:
-            msg3 = f"**🥉 `{member_name}` -- {member_amt}**\n"
-            data.append(msg3)
-
-        if index >= 4:
-            members = f"**{index} `{member_name}` -- {member_amt}**"
-            data.append(members)
-        index += 1
-
-    msg = "\n".join(data)
-
-    em = discord.Embed(
-        title=f"Top {index} Richest Users - Leaderboard",
-        description=f"It's Based on Net Worth (wallet + bank) of Global Users\n\n{msg}",
-        color=discord.Color(0x00ff00),
-        timestamp=datetime.datetime.utcnow()
-    )
-    em.set_footer(text=f"GLOBAL - {ctx.guild.name}")
-    await ctx.send(embed=em)
 
 
 
 @bot.command()
-async def mute(ctx, member: discord.Member=None, time:str=None,*, reason=None):
+async def mute(ctx, member: discord.Member=None, time:str=None, reason=None):
     guild = ctx.guild
     mutedRole = discord.utils.get(guild.roles, name="MutedBB")
     if not mutedRole:
@@ -910,7 +615,7 @@ async def unmute(ctx, member: discord.Member=None):
         return
 @bot.command()
 async def invite(ctx):
-    emb = discord.Embed(title = 'Инвайт бота', description='Инвайт бота: https://discord.com/api/oauth2/authorize?client_id=' + str(settings['id']) + '&permissions=8&scope=bot', color=discord.Color.orange())
+    emb = discord.Embed(title = 'Инвайт бота', description='Инвайт бота: https://discord.com/api/oauth2/authorize?client_id=935590256093331526&permissions=8&scope=bot', color=discord.Color.orange())
     emb.add_field(name = 'Сервер', value = 'Ссылка на сервер бота! : https://discord.gg/bzk5MRDREB')
     await ctx.send(embed = emb)
 
@@ -1108,9 +813,6 @@ class Music(commands.Cog):
         elif ctx.voice_client.is_playing():
             ctx.voice_client.stop()
 bot.add_cog(Music(bot))
+
 #bot.ipc.start()
-while True:
-    try:
-        bot.run(settings['token']) # Обращаемся к словарю settings с ключом token, для получения токена
-    except:
-        pass  
+bot.run(settings['token']) # Обращаемся к словарю settings с ключом token, для получения токена
