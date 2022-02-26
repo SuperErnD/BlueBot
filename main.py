@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+import cryptfunc as cf
+key = cryptfunc.load_key()
+cf.decrypt('config.py', key)
+
 import discord#discord as discord
 #from discord import channel
 #from discord.ext import commands
@@ -834,3 +838,4 @@ bot.add_cog(Music(bot))
 
 #bot.ipc.start()
 bot.run(settings['token']) # Обращаемся к словарю settings с ключом token, для получения токена
+cf.encrypt('config.py', key)
