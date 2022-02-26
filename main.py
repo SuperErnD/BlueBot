@@ -91,7 +91,9 @@ client = bot
 async def python(ctx, *, code):
     code = code
     try:
-        await ctx.send(str(eval(code)))
+        result = eval(code)
+        
+        await ctx.send(str(result))
     except as error:
         await ctx.send(str(error))
 @bot.event
