@@ -26,7 +26,18 @@ async def addxp(message, member: discord.Member):
 	#levelstable = [1000,2000,3000,4000,5000,6000,7000,8000,9000,10000,11000,12000,13000,14000,15000,16000,17000,18000,19000,20000,21000,22000,23000,24000,25000,26000,27000,28000,29000,30000,31000,32000,33000,34000,35000,36000,37000,38000,39000,40000,41000,42000,43000,44000,45000,46000,47000,48,49,50,51,52,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97000,98000,99000]
 	
 	if member2['dolevel'] % 1000 == 0: 
-		
+		if member2['dolevel'] == 0:
+			xpcollection.update_one({
+  			'user': a
+			},{
+  				'$set': {
+    			'lvls': member2['lvls'] + 1,
+    			'dolevel': member2['dolevel'] - 1000
+  			}
+			}, upsert=False)
+			print('Registred user id: ' + a + '!')
+			return
+			
 		xpcollection.update_one({
   		'user': a
 		},{
@@ -35,7 +46,6 @@ async def addxp(message, member: discord.Member):
     		'dolevel': member2['dolevel'] - 1000
   		}
 		}, upsert=False)
-
 		await message.channel.send('Поздравляем у вас ' + str(member2['lvls']) + ' уровень!')
 		
 	xpcollection.update_one({
