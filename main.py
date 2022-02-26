@@ -105,6 +105,14 @@ async def python(ctx, *, code):
         await ctx.send(str(result))
     except Exception as error:
         await ctx.send(str(error))
+@bot.command()
+async def js(ctx, *, code):
+    code = code
+    try:
+        a = js2py.eval_js(code)
+        await ctx.send(a)
+    except:
+        await ctx.send('[ERROR] - JavaScipt compiling to Python ERROR \n try again!')
 @bot.event
 async def on_message(message):
     author = message.author
