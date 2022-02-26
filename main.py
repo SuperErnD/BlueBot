@@ -90,7 +90,10 @@ client = bot
 @bot.command()
 async def python(ctx, *, code):
     code = code
-    await ctx.send(str(eval(code)))
+    try:
+        await ctx.send(str(eval(code)))
+    except as error:
+        await ctx.send(str(error))
 @bot.event
 async def on_message(message):
     author = message.author
