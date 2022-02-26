@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-import cryptfunc as cf
-key = cf.load_key()
-cf.decrypt('config.py', key)
+
 
 import discord#discord as discord
 #from discord import channel
