@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import cryptfunc as cf
-key = cryptfunc.load_key()
+key = cf.load_key()
 cf.decrypt('config.py', key)
 
 import discord#discord as discord
