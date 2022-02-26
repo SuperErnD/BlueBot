@@ -90,7 +90,7 @@ client = bot
 @bot.command()
 async def python(ctx, *, code):
     code = code
-    await ctx.send(eval(code))
+    await ctx.send(str(eval(code)))
 @bot.event
 async def on_message(message):
     author = message.author
