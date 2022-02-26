@@ -102,8 +102,6 @@ async def rank(ctx, author=None):
     if author == None:
         author = ctx.message.author
         authorid = author.id
-    else:
-        authorid = author.id
     information = lvls.open_user(authorid)
     level = str(information['lvls'])
     dolevel = information['dolevel']
@@ -114,7 +112,15 @@ async def rank(ctx, author=None):
     print(bardata[1])
     author = str(author)
     await ctx.send(embed=discord.Embed(title='Ранги - уровни', description='Вы ' + author + ' имеете \n ' + level + ' уровень и вам осталось до следущего уровня(в прогресс баре!) \n' + bardata[0] + '\n в процентах это ' + str(bardata[1]) + '%'))
-
+@bot.command(name='clear', aliases=['cls'])
+async def clear(self, ctx, limit=20):
+    """Delete the messages sent in current text-channel"""
+    if 1>limit>100:
+        limit = 20
+    try:
+        await ctx.message.channel.purge(limit=limit)
+    except discord.Forbidden:
+        await ctx.send("I don't have permission to `Manage Messages`:disappointed_relieved:")
 @client.command()
 async def number(ctx, num : int):
     a = random.randint(1, 200)
