@@ -35,7 +35,7 @@ async def addxp(message, member: discord.Member):
     			'dolevel': 0
   			}
 			}, upsert=False)
-			print('Registred user id: ' + a + '!')
+			print('Registred user id: ' + str(a) + '!')
 			return
 			
 		xpcollection.update_one({
