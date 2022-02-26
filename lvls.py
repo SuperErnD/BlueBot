@@ -8,7 +8,7 @@ async def addxp(message, member: discord.Member):
 	member2 = xpcollection.find_one({'user': id})
 	print(member2)
 	if member2 == None:
-		data = {'user': id, 'lvls': 0, 'dolevel' : 0}
+		data = {'user': id, 'lvls': 0, 'dolevel' : 0, 'registred': 0}
 		memberid = xpcollection.insert_one(data).inserted_id
 		return
 	a = member2["user"]
@@ -27,37 +27,39 @@ async def addxp(message, member: discord.Member):
 	
 	if member2['dolevel'] / 1000 >= 1: 
 		if member2['dolevel'] == 0:
+			if member2['registred'] == 0:
+				xpcollection.update_one({
+  				'user': a
+				},{
+  					'$set': {
+    				'lvls': member2['lvls'] + 1,
+    				'dolevel': member2['dolevel'] + 1
+				'registred': member2['registred'] + 1
+   				}
+				}, upsert=False)
+				print('Registred user id: ' + str(a) + '!')
+				return
+		elif member2['registred'] == 1:
 			xpcollection.update_one({
   			'user': a
 			},{
   				'$set': {
     			'lvls': member2['lvls'] + 1,
     			'dolevel': member2['dolevel'] + 1
-  			}
+   			}
 			}, upsert=False)
 			print('Registred user id: ' + str(a) + '!')
-			return
-		if member2['dolevel'] >= 1000:
-			xpcollection.update_one({
-  			'user': a
-			},{
-  				'$set': {
-    			'dolevel': member2['dolevel'] - 1000
-  			}
-			}, upsert=False)
-			return
-		xpcollection.update_one({
-  		'user': a
-		},{
-  			'$set': {
-    		'lvls': member2['lvls'] + 1,
-    		'dolevel': member2['dolevel'] - 1000
-  		}
-		}, upsert=False)
-		
-		await message.channel.send('Поздравляем у вас ' + str(member2['lvls']) + ' уровень!')
-		
 			
+			if member2['dolevel'] >= 1000:
+				xpcollection.update_one({
+  				'user': a
+				},{
+  					'$set': {
+    				'dolevel': member2['dolevel'] - 1001
+  				}
+				}, upsert=False)
+				await message.channel.send('Поздравляем у вас ' + str(member2['lvls']) + ' уровень!')
+				return
 	xpcollection.update_one({
   	'user': a
 	},{
