@@ -101,7 +101,7 @@ async def python(ctx, *, code):
         elif code == 'exit(1)' or code == 'exit()':
             await ctx.send('Эййй не выключай бота!')
             return
-        result = eval(code)
+        result = exec(code)
         
         await ctx.send(str(result))
     except Exception as error:
