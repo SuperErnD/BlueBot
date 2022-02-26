@@ -5,3 +5,4 @@ requests
 discord-ext-ipc
 pymongo
 StringProgressBar
+cryptography
