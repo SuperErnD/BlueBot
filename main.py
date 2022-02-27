@@ -465,6 +465,11 @@ class Helpbl(discord.ui.View):
         self, button: discord.ui.Button, interaction: discord.MessageInteraction
     ):
         await interaction.response.send_message("https://discord.gg/zy3qJM4mvE", ephemeral=True)
+    @discord.ui.button(label = 'Донат', emoji="🥳", style=ButtonStyle.green, row=2)
+    async def donate(
+        self, button: discord.ui.Button, interaction: discord.MessageInteraction
+    ):
+        await interaction.response.send_message("Смотри ты получиш особенную роль на дискорд сервере \n и это поможет нам разрабатывать бота! \n Duino-coin: Mordsdima \n также чтобы получить роль донатера на нашем сервере напиши в личку создателя и кинь скрин что это действительно вы! \n Discord: TheDiman#2022", ephemeral=True)
 @bot.command()
 async def buttons(ctx):
 
