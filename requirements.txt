@@ -7,3 +7,4 @@ pymongo
 StringProgressBar
 cryptography
 Js2Py
+motor==2.5.1
