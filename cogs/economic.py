@@ -53,12 +53,18 @@ class Economic(commands.Cog):
 		a = random.randint(0,2)
 		b = random.randint(0,1000)
 		if a == 1:
-			embed.description('Вас заметил охраник и дал штрах ' + str(b))
+			embed = discord.Embed(
+				
+				description = 'Вас заметил охраник и дал штрах ' + str(b)
+			)
 			await self.db.update_member(ctx.author, {"$inc": {"balance": -b}})
+			await ctx.send(embed=embed)
 		elif a == 2:
-			embed.description('Вы украли деньги! ' + str(b))
+			embed = discord.Embed(
+				description='Вы угнали ' + b
+			)
 			await self.db.update_member(ctx.author, {"$inc": {"balance": b}})
-		await ctx.send(embed=embed)
+			await ctx.send(embed=embed)
 	@commands.command(
 		name="перевод",
 		aliases=["give-cash", "givecash", "pay"],
