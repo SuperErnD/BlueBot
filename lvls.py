@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 import discord
-client = MongoClient('mongodb://mongo:4tuf0leqvNuG020Vb7WK@containers-us-west-29.railway.app:5998')
+import os
+client = MongoClient(os.getenv('MONGO_URL'))
 db = client['Levels']
 xpcollection = db['users']
 async def addxp(message, member: discord.Member):
