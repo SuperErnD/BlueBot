@@ -1,13 +1,13 @@
 from quart import Quart, render_template, request, session, redirect, url_for
 from quart_discord import DiscordOAuth2Session
 from discord.ext import ipc
-
+import os
 app = Quart(__name__)
 ipc_client = ipc.Client(secret_key = "Swas")
 
 app.config["SECRET_KEY"] = "test123"
 app.config["DISCORD_CLIENT_ID"] = 935590256093331526   # Discord client ID.
-app.config["DISCORD_CLIENT_SECRET"] = "0K6b_OHcC99ruYLrLKU6UCkOZIt0p6n5"   # Discord client secret.
+app.config["DISCORD_CLIENT_SECRET"] = os.getenv('CLIENT_SECRET')   # Discord client secret.
 app.config["DISCORD_REDIRECT_URI"] = "http://localhost:5000/callback"   
 
 
