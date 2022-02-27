@@ -848,6 +848,9 @@ class Music(commands.Cog):
 bot.add_cog(Music(bot))
 
 #bot.ipc.start()
+for filename in os.listdir("./cogs"):
+	if filename.endswith(".py"):
+		bot.load_extension(f"cogs.{filename[:-3]}")
 while True:
     try:
         bot.run(settings['token']) # Обращаемся к словарю settings с ключом token, для получения токена
