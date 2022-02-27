@@ -38,9 +38,10 @@ class Economic(commands.Cog):
 		
 
 		embed = disnake.Embed(
-			description=f'Вы заработали ' + a 
+			description=f'Вы заработали ' + str(a) 
 		)
 		await self.db.update_member(ctx.author, {'$inc': {'balance': a}})
+		await ctx.send(embed=embed)
 	@commands.command(
 		name='украсть',
 		aliases=['crimebank'],
@@ -52,11 +53,12 @@ class Economic(commands.Cog):
 		a = random.randint(0,2)
 		b = random.randint(0,1000)
 		if a == 1:
-			embed.description('Вас заметил охраник и дал штрах ' + b)
+			embed.description('Вас заметил охраник и дал штрах ' + str(b))
 			await self.db.update_member(ctx.author, {"$inc": {"balance": -b}})
 		elif a == 2:
-			embed.description('Вы украли деньги! ' + b)
+			embed.description('Вы украли деньги! ' + str(b))
 			await self.db.update_member(ctx.author, {"$inc": {"balance": b}})
+		await ctx.send(embed=embed)
 	@commands.command(
 		name="перевод",
 		aliases=["give-cash", "givecash", "pay"],
