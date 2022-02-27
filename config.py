@@ -7,3 +7,4 @@ settings = {
     'prefix': os.getenv('PREFIX'),
     'version': os.getenv('VERSION')
 }
+MONGODB_LINK = os.getenv('MONGO_URL')
