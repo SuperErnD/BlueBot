@@ -1,6 +1,6 @@
 import disnake
 from disnake.ext import commands
-
+import random
 from utils import database
 
 
@@ -26,7 +26,37 @@ class Economic(commands.Cog):
 			balance = await self.db.get_data(member)
 			embed.description = f"Баланса пользователя __{member}__: **{balance['balance']}**"
 		await ctx.send(embed=embed)
+	@commands.command(
+		name='заработать',
+		aliases=['working'],
+		brief='ну заработать бобла',
+		usage='work'
+		)
+	async def work(self, ctx):
+		balance = await self.db.get_data(ctx.author)
+		a = random.randint(0, 500)
+		
 
+		embed = disnake.Embed(
+			description=f'Вы заработали ' + a 
+		)
+		await self.db.update_member(ctx.author, {'$inc': {'balance': a}})
+	@commands.command(
+		name='украсть',
+		aliases=['crimebank'],
+		brief='украсть деньги с банка',
+		usage='crime')
+	async def crime(self, ctx):
+		balance = await self.db.get_data(ctx.author)
+		embed = disnake.Embed()
+		a = random.randint(0,2)
+		b = random.randint(0,1000)
+		if a == 1:
+			embed.description('Вас заметил охраник и дал штрах ' + b)
+			await self.db.update_member(ctx.author, {"$inc": {"balance": -b}})
+		elif a == 2:
+			embed.description('Вы украли деньги! ' + b)
+			await self.db.update_member(ctx.author, {"$inc": {"balance": b}})
 	@commands.command(
 		name="перевод",
 		aliases=["give-cash", "givecash", "pay"],
