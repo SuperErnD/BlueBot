@@ -32,10 +32,10 @@ async def addxp(message, member: discord.Member):
 				xpcollection.update_one({
   				'user': a
 				},{
-  					'$set': {
-    				'lvls': member2['lvls'] + 1,
-    				'dolevel': member2['dolevel'] - 1001,
-				'registred': member2['registred'] + 1
+  					'$inc': {
+    				'lvls': 1,
+    				'dolevel': -member2['dolevel'],
+				'registred': 1
    				}
 				}, upsert=False)
 				print('Registred user id: ' + str(a) + '!')
@@ -46,21 +46,22 @@ async def addxp(message, member: discord.Member):
 			},{
   				'$inc': {
     			'lvls': 1,
-    			'dolevel': -1001
+    			'dolevel': -member2['dolevel']
    			}
 			}, upsert=False)
 			print('Updated user id: ' + str(a) + '!')
 			
-			if member2['dolevel'] >= 1000:
-				xpcollection.update_one({
-  				'user': a
-				},{
-  					'$inc': {
-    				'dolevel': -1001
-  				}
-				}, upsert=False)
-				await message.channel.send('Поздравляем у вас ' + str(member2['lvls']) + ' уровень!')
-				return
+		if member2['dolevel'] >= 1000:
+			xpcollection.update_one({
+  			'user': a
+			},{
+  				'$inc': {
+    			'dolevel': -member2['dolevel'],
+			'lvls': 1
+  			}
+			}, upsert=False)
+			await message.channel.send('Поздравляем у вас ' + str(member2['lvls']) + ' уровень!')
+			return
 	xpcollection.update_one({
   	'user': a
 	},{
