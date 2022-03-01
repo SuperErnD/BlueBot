@@ -113,17 +113,13 @@ async def python(ctx, *, code):
 @bot.event
 async def on_message(message):
     author = message.author
-    members = message.guild.members
+    
     if author == client.user:
         return
-    for member in members:
-            if member.bot == True:
-                print('Member is bot!')
-            else:
-                print('Member is not bot! Adding xp....')
+   
 
-                await lvls.addxp(message, author)
-                await bot.process_commands(message)
+    await lvls.addxp(message, author)
+    await bot.process_commands(message)
 @bot.command()
 async def rank(ctx, author=None):
     if author == None:
