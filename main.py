@@ -112,18 +112,18 @@ async def python(ctx, *, code):
 
 @bot.event
 async def on_message(message):
-	author = message.author
-	members = message.guild.members
-	if author == client.user:
-		return
-	for member in members:
-    		if member.bot == True:
-      			print('Member is bot!')
-    		else:
-      			print('Member is not bot! Adding xp....')
-    
-			await lvls.addxp(message, author)
-			await bot.process_commands(message)
+    author = message.author
+    members = message.guild.members
+    if author == client.user:
+        return
+    for member in members:
+            if member.bot == True:
+                print('Member is bot!')
+            else:
+                print('Member is not bot! Adding xp....')
+
+                await lvls.addxp(message, author)
+                await bot.process_commands(message)
 @bot.command()
 async def rank(ctx, author=None):
     if author == None:
@@ -854,8 +854,8 @@ bot.add_cog(Music(bot))
 
 #bot.ipc.start()
 for filename in os.listdir("./cogs"):
-	if filename.endswith(".py"):
-		bot.load_extension(f"cogs.{filename[:-3]}")
+    if filename.endswith(".py"):
+        bot.load_extension(f"cogs.{filename[:-3]}")
 while True:
     try:
         bot.run(settings['token']) # Обращаемся к словарю settings с ключом token, для получения токена
