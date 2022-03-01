@@ -27,7 +27,12 @@ import os
 import youtube_dl
 import json
 import lvls
-
+import motor.motor_asyncio
+cluster = motor.motor_asyncio.AsyncIOMotorClient('mongodb://mongo:4tuf0leqvNuG020Vb7WK@containers-us-west-29.railway.app:5998')
+database = cluster['Logs']
+collection = database['channellog']
+phonesdata = cluster['Phones']
+phonecol = phonesdata['Users']
 from StringProgressBar import progressBar
 youtube_dl.utils.bug_reports_message = lambda: ""
 from discord.enums import ButtonStyle
@@ -108,18 +113,340 @@ async def python(ctx, *, code):
         await ctx.send(str(error))
 
 
-
-
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def setlogchannel(ctx, channel : discord.TextChannel):
+    guildid = ctx.guild.id
+    channelid = channel.id
+    data = {'guild': guildid, 'channel': channelid}
+    result = collection.insert_one(data).inserted_id
+    await ctx.send(embed=discord.Embed(title='<:checkmark:946826044583858266>', description='Успешно!'))
+    return
+#@bot.event
+#async def on_member_update(before, after):
+    #a = after.guild.id
+    #b = collection.find_one({'guild': a})
+    #if not b:
+        #await ctx.send('Ошибка не был указан канал для логов!')
+        #return
+    #channel = bot.get_channel(b['channel'])
+    #print(before)
+    #print(after)
+    #bef = before.roles
+    #aft = after.roles
+    #print(aft)
+    
+    #await channel.send(embed=discord.Embed(title='Логи - обновление юзера',description=f'Самая высокая роль до \n <@&{before.top_role.id}> \n после: \n <@&{after.top_role.id}> \n '))
+@client.event
+async def on_guild_channel_create(channel):
+    a = channel.guild.id
+    b = collection.find_one({'guild': a})
+    if not b:
+        return
+    channel = bot.get_channel(b['channel'])
+    await channel.send(embed=discord.Embed(title='Новый канал', description='Название канала: ' + str(channel.name) + '\n Категория ' + str(channel.category) + '\n Айди: ' + str(channel.id) + '\n Когда создан ' + str(channel.created_at)))#выведет имя канала
+    print('Channel category: ', channel.category)#выведет категорию где он находится
+    print('Channel id: ', channel.id)#выведет айди канала
+    print('Channel created at', channel.created_at)#выведет час и дату когда он был создан
 @bot.event
 async def on_message(message):
     author = message.author
     
     if author == client.user:
         return
-   
-
     await lvls.addxp(message, author)
     await bot.process_commands(message)
+class ChoicePhoneList(discord.ui.Select):
+    def __init__(self, owner_id):
+        # Set the options that will be presented inside the dropdown
+        self.owner_id=owner_id
+        options = [
+            discord.SelectOption(
+                label="MI", description="телефон ксаоми"#, emoji="🛠"
+            ),
+            discord.SelectOption(
+                label="Samsung", description="сомсунг"#, emoji="😄"
+            ),
+            discord.SelectOption(
+                label="Google Pixel", description="клутой телефон ат Гуль"#, emoji="💸"
+            ),
+            discord.SelectOption(
+                label='DIGMA', description='дигмочка дешевое говно'#, emoji='🔴'
+            ),
+        ]
+
+        # The placeholder is what will be shown when no option is chosen
+        # The min and max values indicate we can only pick one of the three options
+        # The options parameter defines the dropdown options. We defined this above
+        super().__init__(
+            placeholder="Выберете пункт...",
+            min_values=1,
+            max_values=1,
+            options=options,
+        )
+
+    async def callback(self, interaction: discord.MessageInteraction):
+        # Use the interaction object to send a response message containing
+        # the user's favourite colour or choice. The self object refers to the
+        # Select object, and the values attribute gets a list of the user's
+        # selected options. We only want the first one.
+        a = await function_new_phone(self.values[0], self.owner_id)
+        await interaction.response.send_message(a, ephemeral=True)
+        
+class ChoicePhoneINIT(discord.ui.View):
+    def __init__(self, owner_id, ctx):
+        super().__init__(timeout=None)
+
+        # Adds the dropdown to our view object.
+        self.add_item(ChoicePhoneList(owner_id))
+        self.ctx = ctx
+    async def interaction_check(self, interaction):
+        if interaction.user == self.ctx.author:
+            return True
+        else:
+            await interaction.response.send_message('Вы не можете использовать команду другого человека!', ephemeral=True)
+            return False
+async def function_new_phone(brand, id):
+    phone = await phonecol.find_one({'owner': id})
+    if not phone:
+        if brand == "MI":
+
+            data = {'owner': id, 'os': 'MIUI', 'brand': 'Xiaomi', 'recovery':'стоковый', 'root':'No installed', 'magisk':'No installed', 'basic':'No installed', 'loader':'No unlock'}
+        elif brand == 'Samsung':
+            data = {'owner': id, 'os':'OneUI', 'brand':'Samsung', 'recovery':'стоковый', 'root':'No installed', 'magisk':'No installed', 'basic':'No installed', 'loader':'No unlock'}
+        elif brand == 'DIGMA':
+            data = {'owner': id, 'os':'Android Go!', 'brand':'Digma', 'recovery':'стоковый', 'root':'No installed', 'magisk':'No installed', 'basic':'No installed', 'loader':'No unlock'}
+        elif brand == 'Google Pixel':
+            data = {'owner': id, 'os':'AOSP', 'brand':'Google Pixel', 'recovery':'стоковый', 'root':'No installed', 'magisk':'No installed', 'basic':'No installed', 'loader':'No unlock'}
+        result = await phonecol.insert_one(data)
+        print(result)
+        return 'Готово! Вы теперь  имеете ' + data['brand'] + ' с ' + data['os']
+    elif phone:
+        print(phone)
+        return 'Ошибка вы не можете иметь больше 1 телефона'
+    else:
+        return 'ОШИБКА возникла ошибка пожалуйста обратитесь к серверу поддержки'
+async def progress(msg):
+    await msg.edit(content='.')
+    await asyncio.sleep(5)
+    await msg.edit(content='..')
+    await asyncio.sleep(5)
+    await msg.edit(content='...')
+    await asyncio.sleep(5)
+    await msg.edit(content='....')
+    await asyncio.sleep(5)
+    await msg.edit(content='.....')
+    await asyncio.sleep(5)
+    await msg.edit(content='......')
+    await asyncio.sleep(5)
+    await msg.edit(content='.......')
+    await asyncio.sleep(5)
+    await msg.edit(content='........')
+    await asyncio.sleep(5)
+    await msg.edit(content='.........')
+    await asyncio.sleep(5)
+    await msg.edit(content='..........')
+    await asyncio.sleep(5)
+    await msg.edit(content='...........')
+    await asyncio.sleep(5)
+    await msg.edit(content='............')
+    await asyncio.sleep(5)
+    await msg.edit(content='.............')
+@bot.command()
+async def myphone(ctx, diia=None, diiasdiia=None, diiia=None):
+    id = ctx.message.author.id
+    phone = await phonecol.find_one({'owner': id})
+    if not phone:
+        await ctx.send('У вас отсуствует телефон!')
+        return
+    phone_name = phone['brand']
+    phone_os = phone['os']
+    phone_root = phone['root']
+    phone_magisk = phone['magisk']
+    phone_basicmagisk = phone['basic']
+    phone_unlock = phone['loader']
+    phone_id = phone['_id']
+    phone_recovery = phone['recovery']
+    if not diia:
+        await ctx.send(embed=discord.Embed(title=f'Ваш {phone_name}', description=f'ИНФОРМАЦИЯ \nAйди: {phone_id}\n Имеет прошивку {phone_os} \n И имеет рековери {phone_recovery}\n СОСТОЯНИЕ \nСостояние рута {phone_root} \nСостояние магиска {phone_magisk}\n Состояние загрузчика {phone_unlock}\nБазовый комплект модулей магиск {phone_basicmagisk}'))
+    if diia == 'install':
+        if not diiasdiia:
+            await ctx.send('Вы не указали что установить!\nСписок: \n TWRP \n custom <CUSTOM NAME> \n Magisk \n Root \n BasicPackMagisk \n Unlock')
+        if diiasdiia == 'custom':
+            if not diiia:
+                await ctx.send('Вы не указали какой кастом надо поставить! ксати вот список: \n MIUI \n OneUI \n AndroidGo \n AOSP')
+            elif diiia == 'MIUI':
+                msg = await ctx.send('Установка откинтесь на спинку пока установится кастом на ваш телефон! (~60 секунд)')
+                msd = await ctx.send('d')
+                await progress(msd)
+                await msd.edit(content='Подготовка к запуску ~5 секунд')
+                phonecol.update_one({
+                'owner': id
+                },{
+                    '$set': {
+                    'os': 'MIUI'
+                }
+                }, upsert=False)
+                await msg.delete()
+                await msd.edit(content='Завершено!')
+            elif diiia == 'AndroidGo':
+                msg = await ctx.send('Установка откинтесь на спинку пока установится кастом на ваш телефон! (~60 секунд)')
+                msd = await ctx.send('d')
+                await progress(msd)
+                await msd.edit(content='Подготовка к запуску ~5 секунд')
+                phonecol.update_one({
+                'owner': id
+                },{
+                    '$set': {
+                    'os': 'Android Go!'
+                }
+                }, upsert=False)
+                await msg.delete()
+                await msd.edit(content='Завершено!')
+            elif diiia == 'OneUI':
+                msg = await ctx.send('Установка откинтесь на спинку пока установится кастом на ваш телефон! (~60 секунд)')
+                msd = await ctx.send('d')
+                await progress(msd)
+                await msd.edit(content='Подготовка к запуску ~5 секунд')
+                phonecol.update_one({
+                'owner': id
+                },{
+                    '$set': {
+                    'os': 'OneUI'
+                }
+                }, upsert=False)
+                await msg.delete()
+                await msd.edit(content='Завершено!')
+            elif diiia == 'AOSP':
+                msg = await ctx.send('Установка откинтесь на спинку пока установится кастом на ваш телефон! (~60 секунд)')
+                msd = await ctx.send('d')
+                await progress(msd)
+                await msd.edit(content='Подготовка к запуску ~5 секунд')
+                phonecol.update_one({
+                'owner': id
+                },{
+                    '$set': {
+                    'os': 'AOSP'
+                }
+                }, upsert=False)
+                await msg.delete()
+                await msd.edit(content='Завершено!')
+            else:
+                await ctx.send('Кастом не найден!')
+                return 
+
+
+        if diiasdiia == 'Unlock':
+            if phone_unlock == 'Unlocked':
+                await ctx.send('403 Forbidden Bot : Вы уже имеете разблокированый загрузчик!')
+                return
+            else:
+                msg = await ctx.send('Разблокировка....')
+                await asyncio.sleep(1)
+                await msg.edit(content='.')
+                await asyncio.sleep(1)
+                await msg.edit(content='..')
+                await asyncio.sleep(1)
+                await msg.edit(content='...')
+                await asyncio.sleep(1)
+                await msg.delete()
+                phonecol.update_one({
+                'owner': id
+                },{
+                    '$set': {
+                    'loader': 'Unlocked'
+                }
+                }, upsert=False)
+                await ctx.send('Готово!')
+        if diiasdiia == 'Root':
+            if phone_root == 'Installed':
+                await ctx.send('У вас уже установлен рут!')
+                return
+            else:
+                msg = await ctx.send('Установка....')
+                await asyncio.sleep(1)
+                await msg.edit(content='.')
+                await asyncio.sleep(1)
+                await msg.edit(content='..')
+                await asyncio.sleep(1)
+                await msg.edit(content='...')
+                await asyncio.sleep(1)
+                await msg.delete()
+                phonecol.update_one({
+                'owner': id
+                },{
+                    '$set': {
+                    'root': 'Installed'
+                }
+                }, upsert=False)
+                await ctx.send('Готово!')
+        if diiasdiia == 'BasicPackMagisk':
+            if phone_basicmagisk == 'Installed':
+                await ctx.send('интересно зачем тебе это ты его уже поставил...')
+                return
+            elif phone_root == 'Not installed': 
+                await ctx.send('Вы не установили рут!')
+                return
+            else:
+                msg = await ctx.send('Установка.....')
+                
+                await asyncio.sleep(1)
+                await msg.edit(content='.')
+                await asyncio.sleep(1)
+                await msg.edit(content='..')
+                await asyncio.sleep(1)
+                await msg.edit(content='...')
+                    
+
+                await msg.delete()
+                phonecol.update_one({
+                'owner': id
+                },{
+                    '$set': {
+                    'basic': 'Installed'
+                }
+                }, upsert=False)
+                msg = await ctx.send('Готово!')
+                await asyncio.sleep(5)
+                await msg.delete()
+        if diiasdiia == 'TWRP':
+            if phone_unlock == 'No unlock':
+                await ctx.reply('Вы не можете поставить ТВРП без открытого загрузчика!')
+                return
+            elif phone_unlock == 'Unlocked':
+                if phone_recovery == 'TWRP':
+                    await ctx.send('У вас уже установлен ТВРП')
+                    return
+                msg = await ctx.send('Установка.....')
+                
+                await asyncio.sleep(1)
+                await msg.edit(content='.')
+                await asyncio.sleep(1)
+                await msg.edit(content='..')
+                await asyncio.sleep(1)
+                await msg.edit(content='...')
+                    
+
+                await msg.delete()
+                phonecol.update_one({
+                'owner': id
+                },{
+                    '$set': {
+                    'recovery': 'TWRP'
+                }
+                }, upsert=False)
+                msg = await ctx.send('Готово!')
+                await asyncio.sleep(5)
+                await msg.delete()
+            else:
+                await ctx.send('500 Bot is have error!')
+@bot.command()
+async def new_phone(ctx):
+    owner = ctx.message.author
+    owner_id = owner.id
+    await ctx.send('Выберете телефон ниже!', view=ChoicePhoneINIT(owner_id, ctx))
+    
+    
 @bot.command()
 async def rank(ctx, author=None):
     if author == None:
@@ -245,7 +572,7 @@ async def reroll(ctx, channel: discord.TextChannel, id : int):
     try:
         new_message = await channel.fetch_message(id)
     except:
-        await ctx.send("Incorrect id.")
+        await ctx.send("Неизвестный айди.")
         return
     if not channel:
         await ctx.send('Вы не указали канал!')
@@ -405,7 +732,7 @@ async def hello(ctx): # Создаём функцию и передаём арг
  #This should be at your other imports at the top of your code
 @bot.event
 async def on_guild_join(guild):
-    pass
+    await bot.change_presence(status=discord.Status.online, activity=discord.Game(name="!help | " + str(len(bot.guilds)) + " серверов"))
 class HelpList(discord.ui.Select):
     def __init__(self):
 
@@ -849,9 +1176,9 @@ class Music(commands.Cog):
 bot.add_cog(Music(bot))
 
 #bot.ipc.start()
-for filename in os.listdir("./cogs"):
-    if filename.endswith(".py"):
-        bot.load_extension(f"cogs.{filename[:-3]}")
+#for filename in os.listdir("./cogs"):
+    #if filename.endswith(".py"):
+        #bot.load_extension(f"cogs.{filename[:-3]}")
 while True:
     try:
         bot.run(settings['token']) # Обращаемся к словарю settings с ключом token, для получения токена

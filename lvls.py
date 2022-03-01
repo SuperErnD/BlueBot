@@ -1,16 +1,16 @@
-from pymongo import MongoClient
+
 import discord
-import os
-client = MongoClient(os.getenv('MONGO_URL'))
+import motor.motor_asyncio
+client = motor.motor_asyncio.AsyncIOMotorClient('mongodb://mongo:4tuf0leqvNuG020Vb7WK@containers-us-west-29.railway.app:5998')
 db = client['Levels']
 xpcollection = db['users']
 async def addxp(message, member: discord.Member):
 	id = member.id
-	member2 = xpcollection.find_one({'user': id})
+	member2 = await xpcollection.find_one({'user': id})
 	print(member2)
 	if member2 == None:
 		data = {'user': id, 'lvls': 0, 'dolevel' : 0}
-		memberid = xpcollection.insert_one(data).inserted_id
+		memberid = await xpcollection.insert_one(data)
 		return
 	a = member2["user"]
 	b = member2['lvls']
@@ -49,7 +49,7 @@ async def addxp(message, member: discord.Member):
   	}
 	}, upsert=False)
 	a = None
-def open_user(member: discord.Member):
+async def open_user(member: discord.Member):
 	id = member
-	member2 = xpcollection.find_one({'user': id})
+	member2 = await xpcollection.find_one({'user': id})
 	return member2
