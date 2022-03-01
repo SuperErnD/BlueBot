@@ -120,7 +120,7 @@ async def on_message(message):
     		if member.bot == True:
       			print('Member is bot!')
     		else:
-      			print('Member is not bot! Adding xp...')
+      			print('Member is not bot! Adding xp....')
     
 			await lvls.addxp(message, author)
 			await bot.process_commands(message)
