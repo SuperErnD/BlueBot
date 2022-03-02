@@ -151,11 +151,12 @@ async def on_guild_channel_create(channel):
 @bot.event
 async def on_message(message):
     author = message.author
-    
+    if not author.bot:
+        await lvls.addxp(message, author)
+        await bot.process_commands(message)
     if author == client.user:
         return
-    await lvls.addxp(message, author)
-    await bot.process_commands(message)
+    
 class ChoicePhoneList(discord.ui.Select):
     def __init__(self, owner_id):
         # Set the options that will be presented inside the dropdown
