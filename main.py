@@ -279,7 +279,7 @@ async def myphone(ctx, diia=None, diiasdiia=None, diiia=None):
             await ctx.send('Вы не указали что установить!\nСписок: \n TWRP \n custom <CUSTOM NAME> \n Magisk \n Root \n BasicPackMagisk \n Unlock')
         if diiasdiia == 'custom':
             if not diiia:
-                await ctx.send('Вы не указали какой кастом надо поставить! ксати вот список: \n MIUI \n OneUI \n AndroidGo \n AOSP')
+                await ctx.send('Вы не указали какой кастом надо поставить! ксати вот список: \n MIUI \n OneUI \n AndroidGo \n AOSP \n ColorOS')
             elif diiia == 'MIUI':
                 msg = await ctx.send('Установка откинтесь на спинку пока установится кастом на ваш телефон! (~60 секунд)')
                 msd = await ctx.send('d')
