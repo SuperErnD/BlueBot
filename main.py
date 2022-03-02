@@ -331,7 +331,7 @@ async def myphone(ctx, diia=None, diiasdiia=None, diiia=None):
                 'owner': id
                 },{
                     '$set': {
-                    'os': 'ColorOS
+                    'os': 'ColorOS'
                 }
                 }, upsert=False)
                 await msg.delete()
