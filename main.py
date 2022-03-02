@@ -382,6 +382,28 @@ async def myphone(ctx, diia=None, diiasdiia=None, diiia=None):
                 }
                 }, upsert=False)
                 await ctx.send('Готово!')
+        if diiasdiia == 'Magisk':
+            if phone_magisk == 'Installed':
+                await ctx.send('У вас уже установлен рут!')
+                return
+            else:
+                msg = await ctx.send('Установка....')
+                await asyncio.sleep(1)
+                await msg.edit(content='.')
+                await asyncio.sleep(1)
+                await msg.edit(content='..')
+                await asyncio.sleep(1)
+                await msg.edit(content='...')
+                await asyncio.sleep(1)
+                await msg.delete()
+                phonecol.update_one({
+                'owner': id
+                },{
+                    '$set': {
+                    'magisk': 'Installed'
+                }
+                }, upsert=False)
+                await ctx.send('Готово!')
         if diiasdiia == 'Root':
             if phone_root == 'Installed':
                 await ctx.send('У вас уже установлен рут!')
