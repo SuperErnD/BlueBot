@@ -173,6 +173,9 @@ class ChoicePhoneList(discord.ui.Select):
             discord.SelectOption(
                 label='DIGMA', description='дигмочка дешевое говно'#, emoji='🔴'
             ),
+            discord.SelectOption(
+                label='OPPO', description='Телефон оппо пойдет ксати у создателя такой!'
+            ),
         ]
 
         # The placeholder is what will be shown when no option is chosen
@@ -211,13 +214,15 @@ async def function_new_phone(brand, id):
     if not phone:
         if brand == "MI":
 
-            data = {'owner': id, 'os': 'MIUI', 'brand': 'Xiaomi', 'recovery':'стоковый', 'root':'No installed', 'magisk':'No installed', 'basic':'No installed', 'loader':'No unlock'}
+            data = {'owner': id, 'os': 'MIUI', 'brand': 'Xiaomi', 'recovery':'Mi Recovery v3.0', 'root':'No installed', 'magisk':'No installed', 'basic':'No installed', 'loader':'No unlock'}
         elif brand == 'Samsung':
             data = {'owner': id, 'os':'OneUI', 'brand':'Samsung', 'recovery':'стоковый', 'root':'No installed', 'magisk':'No installed', 'basic':'No installed', 'loader':'No unlock'}
         elif brand == 'DIGMA':
             data = {'owner': id, 'os':'Android Go!', 'brand':'Digma', 'recovery':'стоковый', 'root':'No installed', 'magisk':'No installed', 'basic':'No installed', 'loader':'No unlock'}
         elif brand == 'Google Pixel':
             data = {'owner': id, 'os':'AOSP', 'brand':'Google Pixel', 'recovery':'стоковый', 'root':'No installed', 'magisk':'No installed', 'basic':'No installed', 'loader':'No unlock'}
+        elif brand == 'OPPO':
+            data = {'owner': id, 'os':'ColorOS', 'brand':'OPPO', 'recovery':'стоковый', 'root':'No installed', 'magisk':'No installed', 'basic':'No installed', 'loader':'No unlock'}
         result = await phonecol.insert_one(data)
         print(result)
         return 'Готово! Вы теперь  имеете ' + data['brand'] + ' с ' + data['os']
@@ -313,6 +318,20 @@ async def myphone(ctx, diia=None, diiasdiia=None, diiia=None):
                 },{
                     '$set': {
                     'os': 'OneUI'
+                }
+                }, upsert=False)
+                await msg.delete()
+                await msd.edit(content='Завершено!')
+            elif diiia == 'ColorOS':
+                msg = await ctx.send('Установка откинтесь на спинку пока установится кастом на ваш телефон! (~60 секунд)')
+                msd = await ctx.send('d')
+                await progress(msd)
+                await msd.edit(content='Подготовка к запуску ~5 секунд')
+                phonecol.update_one({
+                'owner': id
+                },{
+                    '$set': {
+                    'os': 'ColorOS
                 }
                 }, upsert=False)
                 await msg.delete()
