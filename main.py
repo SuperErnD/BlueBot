@@ -498,7 +498,7 @@ async def rank(ctx, author=None):
     if author == None:
         author = ctx.message.author
         authorid = author.id
-    information = lvls.open_user(authorid)
+    information = await lvls.open_user(authorid)
     level = str(information['lvls'])
     dolevel = information['dolevel']
     total = 1000
