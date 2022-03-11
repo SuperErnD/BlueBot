@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 
-import discord#discord as discord
-#from discord import channel
-#from discord.ext import commands
-from discord.ext import ipc, commands
+import disnake as discord
+from disnake import channel
+from disnake.ext import commands
+#from discord.ext import ipc
 import random
 from config import settings 
 import asyncio
@@ -28,14 +28,18 @@ import youtube_dl
 import json
 import lvls
 import motor.motor_asyncio
+
 cluster = motor.motor_asyncio.AsyncIOMotorClient('mongodb://mongo:4tuf0leqvNuG020Vb7WK@containers-us-west-29.railway.app:5998')
+economy = cluster['ecodb']['users']
 database = cluster['Logs']
+shop = cluster['Phones']['shop']
 collection = database['channellog']
 phonesdata = cluster['Phones']
 phonecol = phonesdata['Users']
+store = phonesdata['Apps']
 from StringProgressBar import progressBar
 youtube_dl.utils.bug_reports_message = lambda: ""
-from discord.enums import ButtonStyle
+from disnake.enums import ButtonStyle
 ytdl_format_options = {
     "format": "bestaudio/best",
     "outtmpl": "%(extractor)s-%(id)s-%(title)s.%(ext)s",
@@ -76,23 +80,10 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
         filename = data["url"] if stream else ytdl.prepare_filename(data)
         return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
-class MyBot(commands.Bot):
-    def __init__(self,*args,**kwargs):
-        super().__init__(*args,**kwargs)
 
-        self.ipc = ipc.Server(self,secret_key = "Swas")
-
-
-    async def on_ipc_ready(self):
-        """Called upon the IPC Server being ready"""
-        print("Ipc server is ready.")
-
-    async def on_ipc_error(self, endpoint, error):
-        """Called upon an error being raised within an IPC route"""
-        print(endpoint, "raised", error)
 intents = discord.Intents.all()
 intents.members = True
-bot = MyBot(command_prefix = settings['prefix'], intents=intents, pm_help=True, case_insensitive=True)#, intents = discord.Intents.default())
+bot = commands.Bot(command_prefix = settings['prefix'], intents=intents, pm_help=True, case_insensitive=True)#, intents = discord.Intents.default())
 bot.remove_command('help')
 client = bot
 #@bot.command()
@@ -156,26 +147,36 @@ async def on_message(message):
         await bot.process_commands(message)
     if author == client.user:
         return
-    
+@bot.command()
+async def addmoney(ctx, col:int):
+    id = ctx.author.id
+    if id == 858307410757681172:
+        await economy.update_one({"member_id": id, "guild_id": ctx.guild.id}, {'$inc': {'balance': col}})
+        await ctx.send('Успешно!')
+    else:
+        await ctx.send('Вы не владелец бота!')
+        return
 class ChoicePhoneList(discord.ui.Select):
-    def __init__(self, owner_id):
+    def __init__(self, owner_id, ctx):
         # Set the options that will be presented inside the dropdown
         self.owner_id=owner_id
+        self.ctx = ctx
+        self.owner = self.ctx.author
         options = [
             discord.SelectOption(
-                label="MI", description="телефон ксаоми"#, emoji="🛠"
+                label="MI - 5000", description="телефон ксаоми"#, emoji="🛠"
             ),
             discord.SelectOption(
-                label="Samsung", description="сомсунг"#, emoji="😄"
+                label="Samsung - 10000", description="сомсунг"#, emoji="😄"
             ),
             discord.SelectOption(
-                label="Google Pixel", description="клутой телефон ат Гуль"#, emoji="💸"
+                label="Google Pixel - 14000", description="клутой телефон ат Гуль"#, emoji="💸"
             ),
             discord.SelectOption(
-                label='DIGMA', description='дигмочка дешевое говно'#, emoji='🔴'
+                label='DIGMA - 2400', description='дигмочка дешевое говно'#, emoji='🔴'
             ),
             discord.SelectOption(
-                label='OPPO', description='Телефон оппо пойдет ксати у создателя такой!'
+                label='OPPO - 3400', description='Телефон оппо пойдет ксати у создателя такой!'
             ),
         ]
 
@@ -194,7 +195,7 @@ class ChoicePhoneList(discord.ui.Select):
         # the user's favourite colour or choice. The self object refers to the
         # Select object, and the values attribute gets a list of the user's
         # selected options. We only want the first one.
-        a = await function_new_phone(self.values[0], self.owner_id)
+        a = await function_new_phone(self.values[0], self.owner_id, self.owner)
         await interaction.response.send_message(a, ephemeral=True)
         
 class ChoicePhoneINIT(discord.ui.View):
@@ -202,31 +203,71 @@ class ChoicePhoneINIT(discord.ui.View):
         super().__init__(timeout=None)
 
         # Adds the dropdown to our view object.
-        self.add_item(ChoicePhoneList(owner_id))
+        
         self.ctx = ctx
+        self.add_item(ChoicePhoneList(owner_id, self.ctx))
     async def interaction_check(self, interaction):
         if interaction.user == self.ctx.author:
             return True
         else:
             await interaction.response.send_message('Вы не можете использовать команду другого человека!', ephemeral=True)
             return False
-async def function_new_phone(brand, id):
+
+async def function_new_phone(brand, id, owner):
     phone = await phonecol.find_one({'owner': id})
     if not phone:
         if brand == "MI":
 
-            data = {'owner': id, 'os': 'MIUI', 'brand': 'Xiaomi', 'recovery':'Mi Recovery v3.0', 'root':'No installed', 'magisk':'No installed', 'basic':'No installed', 'loader':'No unlock'}
+            data = {'owner': id, 'os': 'MIUI', 'brand': 'Xiaomi', 'recovery':'Mi Recovery v3.0', 'root':'No installed', 'magisk':'No installed', 'basic':'No installed', 'loader':'No unlock', 'apps':[], 'amount':5000}
+            balance = await economy.find_one({"member_id": id, "guild_id": owner.guild.id})
+
+        
+            await economy.update_one({"member_id": id, "guild_id": owner.guild.id}, {"$inc": {"balance": -data['amount']}})
+            result = await phonecol.insert_one(data)
+            print(result)
+            return 'Готово! Вы теперь  имеете ' + data['brand'] + ' с ' + data['os']
+        
         elif brand == 'Samsung':
-            data = {'owner': id, 'os':'OneUI', 'brand':'Samsung', 'recovery':'стоковый', 'root':'No installed', 'magisk':'No installed', 'basic':'No installed', 'loader':'No unlock'}
+            data = {'owner': id, 'os':'OneUI', 'brand':'Samsung', 'recovery':'стоковый', 'root':'No installed', 'magisk':'No installed', 'basic':'No installed', 'loader':'No unlock', 'apps':[], 'amount':10000}
+            balance = await economy.find_one({"member_id": id, "guild_id": owner.guild.id})
+
+        
+            await economy.update_one({"member_id": id, "guild_id": owner.guild.id}, {"$inc": {"balance": -data['amount']}})
+            result = await phonecol.insert_one(data)
+            print(result)
+            return 'Готово! Вы теперь  имеете ' + data['brand'] + ' с ' + data['os']
         elif brand == 'DIGMA':
-            data = {'owner': id, 'os':'Android Go!', 'brand':'Digma', 'recovery':'стоковый', 'root':'No installed', 'magisk':'No installed', 'basic':'No installed', 'loader':'No unlock'}
+            data = {'owner': id, 'os':'Android Go!', 'brand':'Digma', 'recovery':'стоковый', 'root':'No installed', 'magisk':'No installed', 'basic':'No installed', 'loader':'No unlock', 'apps':[], 'amount':2400}
+            balance = await economy.find_one({"member_id": id, "guild_id": owner.guild.id})
+
+        
+            await economy.update_one({"member_id": id, "guild_id": owner.guild.id}, {"$inc": {"balance": -data['amount']}})
+            result = await phonecol.insert_one(data)
+            print(result)
+            return 'Готово! Вы теперь  имеете ' + data['brand'] + ' с ' + data['os']
         elif brand == 'Google Pixel':
-            data = {'owner': id, 'os':'AOSP', 'brand':'Google Pixel', 'recovery':'стоковый', 'root':'No installed', 'magisk':'No installed', 'basic':'No installed', 'loader':'No unlock'}
+            data = {'owner': id, 'os':'AOSP', 'brand':'Google Pixel', 'recovery':'стоковый', 'root':'No installed', 'magisk':'No installed', 'basic':'No installed', 'loader':'No unlock', 'apps':[], 'amount':14000}
+            balance = await economy.find_one({"member_id": id, "guild_id": owner.guild.id})
+
+        
+            await economy.update_one({"member_id": id, "guild_id": owner.guild.id}, {"$inc": {"balance": -data['amount']}})
+            result = await phonecol.insert_one(data)
+            print(result)
+            return 'Готово! Вы теперь  имеете ' + data['brand'] + ' с ' + data['os']
         elif brand == 'OPPO':
-            data = {'owner': id, 'os':'ColorOS', 'brand':'OPPO', 'recovery':'стоковый', 'root':'No installed', 'magisk':'No installed', 'basic':'No installed', 'loader':'No unlock'}
-        result = await phonecol.insert_one(data)
-        print(result)
-        return 'Готово! Вы теперь  имеете ' + data['brand'] + ' с ' + data['os']
+            
+            data = {'owner': id, 'os':'ColorOS', 'brand':'OPPO', 'recovery':'стоковый', 'root':'No installed', 'magisk':'No installed', 'basic':'No installed', 'loader':'No unlock', 'apps':[], 'amount':3400}
+            
+            balance = await economy.find_one({"member_id": id, "guild_id": owner.guild.id})
+            if balance['balance'] < data['amount']:
+                pass
+            
+            await economy.update_one({"member_id": id, "guild_id": owner.guild.id}, {"$inc": {"balance": -data['amount']}})
+
+
+            result = await phonecol.insert_one(data)
+            print(result)
+            return 'Готово! Вы теперь  имеете ' + data['brand'] + ' с ' + data['os']
     elif phone:
         print(phone)
         return 'Ошибка вы не можете иметь больше 1 телефона'
@@ -259,6 +300,65 @@ async def progress(msg):
     await asyncio.sleep(5)
     await msg.edit(content='.............')
 @bot.command()
+async def appstore(ctx, dia=None, app=None, desc=None):
+    if not dia:
+        await ctx.send('Добро пожаловать в магазин приложений виберете пункт \n install \n apps \n search')
+    if dia == 'apps':
+        id = ctx.author.id
+        phone = await phonecol.find_one({'owner': id})
+        apps = phone['apps']
+        await ctx.send('Ваши приложения:')
+        await ctx.send('\n'.join(apps))
+
+    elif dia == 'install':
+        if not app:
+            await ctx.send('Вы не указали приложение!')
+            return
+        else:
+            id = ctx.author.id
+            phone = await phonecol.find_one({'owner': id})
+            apps = phone['apps']
+            app = app
+            appinfo = await store.find_one({'name':app})
+            if not appinfo:
+                await ctx.send('[ERROR 404] appstore.com выдает ошибку приложение не найдено с статусом 404')
+                return
+
+            apps.append(appinfo['name'])
+            print(apps)
+            phonecol.update_one({
+            'owner': id
+            },{
+                '$set': {
+                'apps': apps
+            }
+            }, upsert=False)
+            await ctx.send('Вы установили приложение!')
+    elif dia == 'search':
+        if not app:
+            await ctx.send('Вы не указали приложение!')
+            return
+        else:
+            appinfo = await store.find_one({'name':app})
+            if not appinfo:
+                await ctx.send('[ERROR 404] appstore.com выдает ошибку приложение не найдено с статусом 404')
+                return
+            await ctx.send(f'Название:' + appinfo['name'] + '\nОписание: ' + appinfo['description'])
+    elif dia == 'upload': 
+        if not app:
+            await ctx.send('Вы не указали название!')
+            return
+        if not desc:
+            await ctx.send('отсуствует описание!')
+            return
+        else:
+            await ctx.send('Добавляем...')
+            data = {'name':app,'description':desc}
+            result = await store.insert_one(data)
+            await ctx.send(f'[Успешно <:checkmark:946826044583858266> !] Вы залили ' + data['app'])
+    else:
+        await ctx.send('Неизвестная команда!')
+@bot.command()
 async def myphone(ctx, diia=None, diiasdiia=None, diiia=None):
     id = ctx.message.author.id
     phone = await phonecol.find_one({'owner': id})
@@ -281,14 +381,24 @@ async def myphone(ctx, diia=None, diiasdiia=None, diiia=None):
         if diiasdiia == 'custom':
             if not diiia:
                 await ctx.send('Вы не указали какой кастом надо поставить! ксати вот список: \n MIUI \n OneUI \n AndroidGo \n AOSP \n ColorOS')
+            
             elif phone_unlock == 'No unlock':
                 await ctx.send('У вас не разблокирован загрузчик!')
                 return
             
             elif diiia == 'MIUI':
+                a = random.randint(0, 100)
+                brick = a>=75
                 msg = await ctx.send('Установка откинтесь на спинку пока установится кастом на ваш телефон! (~60 секунд)')
                 msd = await ctx.send('d')
                 await progress(msd)
+                if brick == True:
+                    ctx.send('Упс....  у вас не получилось прошить он стал кирпичем и вы его викинули!')
+                    phonecol.delete_one({'_id':phone_id})
+                    return
+                else:
+                    pass
+                    
                 await msd.edit(content='Подготовка к запуску ~5 секунд')
                 phonecol.update_one({
                 'owner': id
@@ -300,9 +410,17 @@ async def myphone(ctx, diia=None, diiasdiia=None, diiia=None):
                 await msg.delete()
                 await msd.edit(content='Завершено!')
             elif diiia == 'AndroidGo':
+                a = random.randint(0, 100)
+                brick = a>=75
                 msg = await ctx.send('Установка откинтесь на спинку пока установится кастом на ваш телефон! (~60 секунд)')
                 msd = await ctx.send('d')
                 await progress(msd)
+                if brick == True:
+                    ctx.send('Упс....  у вас не получилось прошить он стал кирпичем и вы его викинули!')
+                    phonecol.delete_one({'_id':phone_id})
+                    return
+                elif brick == False:
+                    pass
                 await msd.edit(content='Подготовка к запуску ~5 секунд')
                 phonecol.update_one({
                 'owner': id
@@ -314,9 +432,17 @@ async def myphone(ctx, diia=None, diiasdiia=None, diiia=None):
                 await msg.delete()
                 await msd.edit(content='Завершено!')
             elif diiia == 'OneUI':
+                a = random.randint(0, 100)
+                brick = a>=75
                 msg = await ctx.send('Установка откинтесь на спинку пока установится кастом на ваш телефон! (~60 секунд)')
                 msd = await ctx.send('d')
                 await progress(msd)
+                if brick == True:
+                    ctx.send('Упс....  у вас не получилось прошить он стал кирпичем и вы его викинули!')
+                    phonecol.delete_one({'_id':phone_id})
+                    return
+                elif brick == False:
+                    pass
                 await msd.edit(content='Подготовка к запуску ~5 секунд')
                 phonecol.update_one({
                 'owner': id
@@ -328,9 +454,17 @@ async def myphone(ctx, diia=None, diiasdiia=None, diiia=None):
                 await msg.delete()
                 await msd.edit(content='Завершено!')
             elif diiia == 'ColorOS':
+                a = random.randint(0, 100)
+                brick = a>=75
                 msg = await ctx.send('Установка откинтесь на спинку пока установится кастом на ваш телефон! (~60 секунд)')
                 msd = await ctx.send('d')
                 await progress(msd)
+                if brick == True:
+                    ctx.send('Упс....  у вас не получилось прошить он стал кирпичем и вы его викинули!')
+                    phonecol.delete_one({'_id':phone_id})
+                    return
+                elif brick == False:
+                    pass
                 await msd.edit(content='Подготовка к запуску ~5 секунд')
                 phonecol.update_one({
                 'owner': id
@@ -342,9 +476,17 @@ async def myphone(ctx, diia=None, diiasdiia=None, diiia=None):
                 await msg.delete()
                 await msd.edit(content='Завершено!')
             elif diiia == 'AOSP':
+                a = random.randint(0, 100)
+                brick = a>=75
                 msg = await ctx.send('Установка откинтесь на спинку пока установится кастом на ваш телефон! (~60 секунд)')
                 msd = await ctx.send('d')
                 await progress(msd)
+                if brick == True:
+                    ctx.send('Упс....  у вас не получилось прошить он стал кирпичем и вы его викинули!')
+                    phonecol.delete_one({'_id':phone_id})
+                    return
+                elif brick == False:
+                    pass
                 await msd.edit(content='Подготовка к запуску ~5 секунд')
                 phonecol.update_one({
                 'owner': id
@@ -498,7 +640,7 @@ async def rank(ctx, author=None):
     if author == None:
         author = ctx.message.author
         authorid = author.id
-    information = await lvls.open_user(authorid)
+    information = lvls.open_user(authorid)
     level = str(information['lvls'])
     dolevel = information['dolevel']
     total = 1000
@@ -634,36 +776,36 @@ async def reroll(ctx, channel: discord.TextChannel, id : int):
     reroll_announcement.set_author(name = f'Розыгрыш был повторен организатором!', icon_url = 'https://i.imgur.com/DDric14.png')
     reroll_announcement.add_field(name = f'🥳 Новый победитель:', value = f'{winner.mention}', inline = False)
     await channel.send(embed = reroll_announcement)
-@bot.ipc.route()
-async def get_guild_count(data):
-    return len(bot.guilds) # returns the len of the guilds to the client
+#@bot.ipc.route()
+#async def get_guild_count(data):
+    #return len(bot.guilds) # returns the len of the guilds to the client
 
-@bot.ipc.route()
-async def get_guild_ids(data):
-    final = []
-    for guild in bot.guilds:
-        final.append(guild.id)
-    return final # returns the guild ids to the client
+#@bot.ipc.route()
+#async def get_guild_ids(data):
+    #final = []
+    #for guild in bot.guilds:
+        #final.append(guild.id)
+    #return final # returns the guild ids to the client
 
-@bot.ipc.route()
-async def get_guild(data):
-    guild = bot.get_guild(data.guild_id)
-    if guild is None: return None
+#@bot.ipc.route()
+#async def get_guild(data):
+    #guild = bot.get_guild(data.guild_id)
+    #if guild is None: return None
 
-    guild_data = {
-        "name": guild.name,
-        "id": guild.id,
-        "prefix" : "?"
-    }
+    #guild_data = {
+        #"name": guild.name,
+        #"id": guild.id,
+        #"prefix" : "?"
+    #}
 
-    return guild_data
+    #return guild_data
 
 
 
 @bot.command()
 async def avatar(ctx, *,  avamember : discord.Member=None):
     author = ctx.message.author
-    userAvatarUrl = author.avatar_url
+    userAvatarUrl = author.avatar
     if not avamember:
         embed = discord.Embed(description =  "Аватар " + author.mention, color = 0x00008b)
         embed.set_image(url = userAvatarUrl)
@@ -816,7 +958,7 @@ class HelpList(discord.ui.Select):
         if self.values[0] == 'Аватары':
             await interaction.response.send_message(embed=discord.Embed(title='Команды', description='`b!blue_avatar` \n `b!pink_avatar` \n `b!multi_avatar` \n `b!yellow_avatar` \n `b!red_avatar` \n `b!grey_avatar` \n `b!green_avatar`'), ephemeral=True)
         if self.values[0] == 'Модерация':
-            await interaction.response.send_message(embed=discord.Embed(title='Команды', description="Команды модерации:\n`b!ban`\n`b!mute`\n`b!unban`\n`b!kick`\n`b!ping`\n`b!unmute\n`b!ver`"), ephemeral=True)
+            await interaction.response.send_message(embed=discord.Embed(title='Команды', description="Команды модерации:\n`b!ban`\n`b!mute`\n`b!unban`\n`b!kick`\n`b!ping`\n`b!unmute`\n`b!ver`"), ephemeral=True)
         if self.values[0] == 'Веселое!/Разное!':
             await interaction.response.send_message(embed=discord.Embed(title='Команды', description='`b!hello`\n`b!avatar`\n`b!dog`\n`b!fox`\n`b!cat`\n`b!panda`\n`b!rank`\n'), ephemeral=True)
         #await interaction.response.send_message(f"Your favourite colour is {self.values[0]}")
@@ -857,9 +999,8 @@ async def buttons(ctx):
 @bot.event
 async def on_ready():
     await bot.change_presence(status=discord.Status.online, activity=discord.Game(name="!help | " + str(len(bot.guilds)) + " серверов"))
-    await bot.ipc.start()
     print("Bot is ready!")
-    print('Im at {bot.user.name} and {bot.user.id}')
+    print(f'Im at {bot.user.name} and {bot.user.id}')
 
 @bot.command(pass_context=True)
 @commands.has_permissions(administrator=True)
@@ -916,6 +1057,38 @@ async def ban_id(ctx, user_id=None, time1: str=None, reason=None):
 
     except discord.HTTPException:
         return
+
+ALL_ACTIVITIES = [act.name for act in discord.PartyType]
+@bot.command(pass_context=True,name='activity')
+async def activity(ctx, channel:discord.VoiceChannel=None,game=None):
+    if not channel:
+        await ctx.send(embed=discord.Embed(title='[ERROR 400 BAD REQUEST] вы не указали канал!'))
+        return
+    elif not game:
+        await ctx.send(embed=discord.Embed(title='[ERROR 400 BAD REQUEST] вы не указали игру!\n' + '\n'.join(ALL_ACTIVITIES)))
+        return
+    
+    
+    
+    
+    #wait = await ctx.send(embed=discord.Embed(title='Генерация...'))
+    link = await channel.create_invite(reason='Activity created',target_type=discord.InviteTarget.embedded_application,target_application=getattr(discord.PartyType, game))
+    print(link)
+    await ctx.send(link, embed=discord.Embed(title='Вот:'))
+@bot.slash_command(guild_ids=[892813166319386655])
+async def create_invite(self, inter: discord.ApplicationCommandInteraction,
+                        custom_activity: commands.option_enum(ALL_ACTIVITIES)):
+    """
+    Select custom activity
+    """
+
+    if not inter.user.voice:
+        return await inter.response.send_message("you're not in voice channel")
+    voice_channel = inter.user.voice.channel
+    link = await voice_channel.create_invite(reason='Activity created',
+                                                 target_type=discord.InviteTarget.embedded_application,
+                                                 target_application=getattr(discord.PartyType, custom_activity))
+    await inter.response.send_message(f"[click here to start the activity]({link})")
 @bot.command(pass_context=True)
 @commands.has_permissions(administrator=True)
 async def unban(ctx, *, member):
@@ -930,6 +1103,10 @@ async def unban(ctx, *, member):
         emb.add_field(name='✅ UnBan пользователя', value='Пользователь {} был разбанен.'.format(member))
         await ctx.reply(embed = emb)
         return
+
+
+
+
 
 
 
@@ -1222,9 +1399,9 @@ class Music(commands.Cog):
 bot.add_cog(Music(bot))
 
 #bot.ipc.start()
-#for filename in os.listdir("./cogs"):
-    #if filename.endswith(".py"):
-        #bot.load_extension(f"cogs.{filename[:-3]}")
+for filename in os.listdir("./cogs/"):
+    if filename.endswith(".py"):
+        bot.load_extension(f"cogs.{filename[:-3]}")
 while True:
     try:
         bot.run(settings['token']) # Обращаемся к словарю settings с ключом token, для получения токена
@@ -1233,4 +1410,3 @@ while True:
             continue
     except:
         pass
-    
