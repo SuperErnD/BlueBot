@@ -1075,7 +1075,7 @@ async def activity(ctx, channel:discord.VoiceChannel=None,game=None):
     link = await channel.create_invite(reason='Activity created',target_type=discord.InviteTarget.embedded_application,target_application=getattr(discord.PartyType, game))
     print(link)
     await ctx.send(link, embed=discord.Embed(title='Вот:'))
-@bot.slash_command(guild_ids=[892813166319386655])
+@bot.slash_command()
 async def create_invite(self, inter: discord.ApplicationCommandInteraction,
                         custom_activity: commands.option_enum(ALL_ACTIVITIES)):
     """
