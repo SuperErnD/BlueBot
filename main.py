@@ -640,7 +640,7 @@ async def rank(ctx, author=None):
     if author == None:
         author = ctx.message.author
         authorid = author.id
-    information = lvls.open_user(authorid)
+    information = await lvls.open_user(authorid)
     level = str(information['lvls'])
     dolevel = information['dolevel']
     total = 1000
@@ -1060,21 +1060,20 @@ async def ban_id(ctx, user_id=None, time1: str=None, reason=None):
 
 ALL_ACTIVITIES = [act.name for act in discord.PartyType]
 @bot.command(pass_context=True,name='activity')
-async def activity(ctx, channel:discord.VoiceChannel=None,game=None):
-    if not channel:
-        await ctx.send(embed=discord.Embed(title='[ERROR 400 BAD REQUEST] вы не указали канал!'))
-        return
-    elif not game:
+async def activity(ctx, game=None):
+    
+    if not game:
         await ctx.send(embed=discord.Embed(title='[ERROR 400 BAD REQUEST] вы не указали игру!\n' + '\n'.join(ALL_ACTIVITIES)))
         return
     
     
-    
-    
+    if not ctx.author.voice:
+        return await ctx.send("you're not in voice channel")
+    channel = ctx.author.voice.channel
     #wait = await ctx.send(embed=discord.Embed(title='Генерация...'))
     link = await channel.create_invite(reason='Activity created',target_type=discord.InviteTarget.embedded_application,target_application=getattr(discord.PartyType, game))
     print(link)
-    await ctx.send(link, embed=discord.Embed(title='Вот:'))
+    await ctx.send(f'[click here to start the activity]({link})')
 @bot.slash_command()
 async def create_invite(self, inter: discord.ApplicationCommandInteraction,
                         custom_activity: commands.option_enum(ALL_ACTIVITIES)):

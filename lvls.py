@@ -1,5 +1,4 @@
-
-import discord
+import disnake as discord
 import motor.motor_asyncio
 client = motor.motor_asyncio.AsyncIOMotorClient('mongodb://mongo:4tuf0leqvNuG020Vb7WK@containers-us-west-29.railway.app:5998')
 db = client['Levels']
@@ -31,7 +30,7 @@ async def addxp(message, member: discord.Member):
 		
 			
 		if member2['dolevel'] >= 1000:
-			xpcollection.update_one({
+			await xpcollection.update_one({
   			'user': a
 			},{
   				'$inc': {
@@ -41,13 +40,14 @@ async def addxp(message, member: discord.Member):
 			}, upsert=False)
 			await message.channel.send('Поздравляем у вас ' + str(member2['lvls']) + ' уровень!')
 			return
-	xpcollection.update_one({
-  	'user': a
-	},{
-  		'$set': {
-    	'dolevel': member2['dolevel'] + 5
-  	}
-	}, upsert=False)
+	#await xpcollection.update_one({
+  	#'user': a
+	#},{
+  		#'$set': {
+    	#'dolevel': member2['dolevel'] + 0.5
+
+  	#}
+	#}, upsert=False)
 	a = None
 async def open_user(member: discord.Member):
 	id = member
