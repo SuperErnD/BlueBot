@@ -3,7 +3,7 @@ FROM python
 COPY . ./
 WORKDIR ./
 
-RUN apt install libffi-dev
+
 RUN apt install libpython3-dev
 RUN pip install -r requirements.txt
 RUN python main.py
