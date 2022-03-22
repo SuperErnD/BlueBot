@@ -1,3 +1,4 @@
 libpython3-dev
 libffi-dev
 ffmpeg
+libvpx
