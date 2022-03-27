@@ -28,11 +28,11 @@ class Economic(commands.Cog):
 		await ctx.send(embed=embed)
 	@commands.command(
 		name='заработать',
-		aliases=['working'],
+		aliases=['work'],
 		brief='ну заработать бобла',
 		usage='work'
 		)
-	async def work(self, ctx):
+	async def working(self, ctx):
 		balance = await self.db.get_data(ctx.author)
 		a = random.randint(0, 500)
 		
@@ -44,12 +44,12 @@ class Economic(commands.Cog):
 		await ctx.send(embed=embed)
 	@commands.command(
 		name='украсть',
-		aliases=['crimebank'],
+		aliases=['crime'],
 		brief='украсть деньги с банка',
 		usage='crime')
-	async def crime(self, ctx):
+	async def crimebank(self, ctx):
 		balance = await self.db.get_data(ctx.author)
-		embed = disnake.Embed()
+		#embed = disnake.Embed()
 		a = random.randint(0,2)
 		b = random.randint(0,1000)
 		if a == 1:
