@@ -50,7 +50,7 @@ class Economic(commands.Cog):
 	async def crimebank(self, ctx):
 		balance = await self.db.get_data(ctx.author)
 		#embed = disnake.Embed()
-		a = random.randint(0,2)
+		a = random.randint(1,2)
 		b = random.randint(0,1000)
 		if a == 1:
 			embed = discord.Embed(
