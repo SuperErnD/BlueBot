@@ -813,7 +813,7 @@ async def avatar(ctx, *,  avamember : discord.Member=None):
         await ctx.send(embed = embed)
     try:
         author = ctx.message.author
-        userAvatarUrl = avamember.avatar_url
+        userAvatarUrl = avamember.avatar.url
         embed = discord.Embed(description =  "Аватар " + avamember.mention, color = 0x00008b)
         embed.set_image(url = userAvatarUrl)
         embed.set_footer(text=f'{avamember}', icon_url = userAvatarUrl)
@@ -963,7 +963,7 @@ class HelpList(discord.ui.Select):
             await interaction.response.send_message(embed=discord.Embed(title='Команды', description='`b!hello`\n`b!avatar`\n`b!dog`\n`b!fox`\n`b!cat`\n`b!panda`\n`b!rank`\n'), ephemeral=True)
         #await interaction.response.send_message(f"Your favourite colour is {self.values[0]}")
         if self.values[0] == 'Экономика':
-            await interaction.response.send_message(embed=discord.Embed(title='Команды', description='Ты экономист!) \n`b!balance`\n`b!with`\n`b!dep`'), ephemeral=True)
+            await interaction.response.send_message(embed=discord.Embed(title='Команды', description='Ты экономист!) \n`b!bal`\n`b!working`\n`b!pay`'), ephemeral=True)
 class Helpbl(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
