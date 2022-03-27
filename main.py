@@ -653,8 +653,8 @@ async def rank(ctx, author=None):
 @bot.command(name='clear', aliases=['cls'])
 async def clear(self, ctx, limit=20):
     """Delete the messages sent in current text-channel"""
-    if 1>limit>100:
-        limit = 20
+    
+    
     try:
         await ctx.message.channel.purge(limit=limit)
     except discord.Forbidden:
@@ -963,7 +963,7 @@ class HelpList(discord.ui.Select):
             await interaction.response.send_message(embed=discord.Embed(title='Команды', description='`b!hello`\n`b!avatar`\n`b!dog`\n`b!fox`\n`b!cat`\n`b!panda`\n`b!rank`\n'), ephemeral=True)
         #await interaction.response.send_message(f"Your favourite colour is {self.values[0]}")
         if self.values[0] == 'Экономика':
-            await interaction.response.send_message(embed=discord.Embed(title='Команды', description='Ты экономист!) \n`b!bal`\n`b!working`\n`b!pay`'), ephemeral=True)
+            await interaction.response.send_message(embed=discord.Embed(title='Команды', description='Ты экономист!) \n`b!bal`\n`b!work`\n`b!pay`\n`b!crime`'), ephemeral=True)
 class Helpbl(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
