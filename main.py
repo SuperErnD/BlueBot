@@ -651,7 +651,7 @@ async def rank(ctx, author=None):
     author = str(author)
     await ctx.send(embed=discord.Embed(title='Ранги - уровни', description='Вы ' + author + ' имеете \n ' + level + ' уровень и вам осталось до следущего уровня(в прогресс баре!) \n' + bardata[0] + '\n в процентах это ' + str(bardata[1]) + '%'))
 @bot.command(name='clear', aliases=['cls'])
-async def clear(self, ctx, limit=20):
+async def clear(ctx, limit=20):
     """Delete the messages sent in current text-channel"""
     
     
