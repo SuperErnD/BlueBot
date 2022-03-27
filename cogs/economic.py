@@ -65,6 +65,7 @@ class Economic(commands.Cog):
 			)
 			await self.db.update_member(ctx.author, {"$inc": {"balance": b}})
 			await ctx.send(embed=embed)
+		print(a)
 	@commands.command(
 		name="перевод",
 		aliases=["give-cash", "givecash", "pay"],
