@@ -38,7 +38,7 @@ phonesdata = cluster['Phones']
 phonecol = phonesdata['Users']
 store = phonesdata['Apps']
 from StringProgressBar import progressBar
-youtube_dl.utils.bug_reports_message = lambda: ""
+#youtube_dl.utils.bug_reports_message = lambda: ""
 from disnake.enums import ButtonStyle
 ytdl_format_options = {
     "format": "bestaudio/best",
