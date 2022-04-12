@@ -1,6 +1,6 @@
 disnake[voice]
 
-youtube_dl
+
 requests
 discord-ext-ipc
 pymongo
