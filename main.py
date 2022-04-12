@@ -633,8 +633,22 @@ async def new_phone(ctx):
     owner = ctx.message.author
     owner_id = owner.id
     await ctx.send('Выберете телефон ниже!', view=ChoicePhoneINIT(owner_id, ctx))
+@bot.slash_command(name='rank', description='Показывает ваш уровень')
+async def rank(inter):
     
-    
+    author = inter.author
+    authorid = author.id
+    information = await lvls.open_user(authorid)
+    level = str(information['lvls'])
+    dolevel = information['dolevel']
+    total = 1000
+    bardata = progressBar.filledBar(total, dolevel, size=10)
+    print(author)
+    print(bardata[0])
+    print(bardata[1])
+    author = str(author)
+    await inter.response.send_message(embed=discord.Embed(title='Ранги - уровни', description='Вы ' + author + ' имеете \n ' + level + ' уровень и вам осталось до следущего уровня(в прогресс баре!) \n' + bardata[0] + '\n в процентах это ' + str(bardata[1]) + '%'))
+  
 @bot.command()
 async def rank(ctx, author=None):
     if author == None:
@@ -650,6 +664,16 @@ async def rank(ctx, author=None):
     print(bardata[1])
     author = str(author)
     await ctx.send(embed=discord.Embed(title='Ранги - уровни', description='Вы ' + author + ' имеете \n ' + level + ' уровень и вам осталось до следущего уровня(в прогресс баре!) \n' + bardata[0] + '\n в процентах это ' + str(bardata[1]) + '%'))
+@bot.slash_command(name='clear', description='Очищяет текущий канал')
+async def clear(inter, limit=20):
+    """Delete the messages sent in current text-channel"""
+    
+    
+    try:
+        await inter.message.channel.purge(limit=limit)
+        await inter.response.send_message('Очищено!')
+    except discord.Forbidden:
+        await inter.response.send_message("I don't have permission to `Manage Messages`:disappointed_relieved:")
 @bot.command(name='clear', aliases=['cls'])
 async def clear(ctx, limit=20):
     """Delete the messages sent in current text-channel"""
@@ -668,6 +692,16 @@ async def number(ctx, num : int):
     else:
         print('You not win :(')
         await ctx.send('You not win :(')
+        print(a)
+@client.slash_command(description='Игра простенькая!')
+async def number(inter, num : int):
+    a = random.randint(1, 200)
+    if num == a:
+        print('You Win!')
+        await inter.response.send_message('You win!')
+    else:
+        print('You not win :(')
+        await inter.response.send_message('You not win :(')
         print(a)
 @client.command()
 async def helpgiver(ctx):
@@ -801,10 +835,29 @@ async def reroll(ctx, channel: discord.TextChannel, id : int):
     #return guild_data
 
 
-
+@bot.slash_command(description='Показывает аватарку пользователя')
+async def avatar(inter, *,  avamember : discord.Member=None):
+    author = inter.author
+    userAvatarUrl = author.avatar
+    if not avamember:
+        embed = discord.Embed(description =  "Аватар " + author.mention, color = 0x00008b)
+        embed.set_image(url = userAvatarUrl)
+        embed.set_footer(text=f'{inter.author}', icon_url = userAvatarUrl)
+        await inter.response.send_message(embed = embed)
+    try:
+        author = inter.author
+        userAvatarUrl = avamember.avatar.url
+        embed = discord.Embed(description =  "Аватар " + avamember.mention, color = 0x00008b)
+        embed.set_image(url = userAvatarUrl)
+        embed.set_footer(text=f'{avamember}', icon_url = userAvatarUrl)
+        await inter.response.send_message(embed = embed)
+    except discord.Forbidden:
+        return
+    except discord.HTTPException:
+        return
 @bot.command()
 async def avatar(ctx, *,  avamember : discord.Member=None):
-    author = ctx.message.author
+    author = ctx.author
     userAvatarUrl = author.avatar
     if not avamember:
         embed = discord.Embed(description =  "Аватар " + author.mention, color = 0x00008b)
@@ -909,10 +962,81 @@ async def server(ctx):
     if BannerURl:
         embed.set_image(url = BannerURl)
     await ctx.send(embed=embed)
+@client.slash_command(description='Показывает инфу об сервере')
+async def server(inter):
+    ctx = inter
+    statuses = [len(list(filter(lambda m: str(m.status) == "online", ctx.guild.members))),
+                len(list(filter(lambda m: str(m.status) == "idle", ctx.guild.members))),
+                len(list(filter(lambda m: str(m.status) == "dnd", ctx.guild.members))),
+                len(list(filter(lambda m: str(m.status) == "offline", ctx.guild.members)))]
+    if ctx.guild.banner:
+        BannerURl = ctx.guild.banner.url
+    else:
+        BannerURl = None
+    icon = ctx.guild.icon.url
+    members = len(list(filter(lambda m: not m.bot, ctx.guild.members)))
+    bots = len(list(filter(lambda m: m.bot, ctx.guild.members)))
+    all = len(ctx.guild.members)
+    text = len(ctx.guild.voice_channels)
+    voice = len(ctx.guild.text_channels)
+    category = len(ctx.guild.categories)
+    allchannels = len(ctx.guild.channels)
+    noanimemoji = 0
+    anim_emoji = 0
+    allemoji = len(ctx.guild.emojis)
+    limitemoji = ctx.guild.emoji_limit
+    twofa = ctx.guild.mfa_level
+    for emoji in ctx.guild.emojis:
+        if emoji.animated == True:
+            anim_emoji += 1
+        elif emoji.animated == False:
+            noanimemoji += 1
+    public = ctx.guild.public_updates_channel
+    rules = ctx.guild.rules_channel
+    description = ctx.guild.description
+    region = ctx.guild.region
 
+    embed = discord.Embed(title=f"Информация о сервере {ctx.guild.name}", color = 0x00008b)
+    embed.add_field(name = "Ролей:", value = len(ctx.guild.roles), inline = True)
+    embed.add_field(name="Участников", value=f"<:all:942048151571947580>: {all}\n<:members:942049581926060072> : {members}\n<:bot:942049242325843968>: {bots}")
+    embed.add_field(name = "Забаненных", value = len(await ctx.guild.bans()))
+    embed.add_field(name="Статусы", value=f"🟢: {statuses[0]}\n🌙: {statuses[1]}\n⛔: {statuses[2]}\n<:offline:942040928904962050>: {statuses[3]}")
+    embed.add_field(name = "Каналов:", value = f"Всего: {allchannels}\nТекстовых каналов: {text}\nГолосовых каналов: {voice}\nКатегорий: {category}")
+    embed.add_field(name = "Эмодзи:", value = f"Всего: {allemoji}\nАним.: {anim_emoji}\nСтат.: {noanimemoji}\nЛимит: {limitemoji}")
+    embed.add_field(name = "Регион:", value = ctx.guild.region)
+    if twofa == 0:
+        embed.add_field(name = 'Требование 2FA', value = 'Отключено')
+    else:
+        embed.add_field(name = 'Требование 2FA', value = 'Включено')
+    embed.add_field(name = "ID сервера:", value = ctx.guild.id)
+    embed.add_field(name = "Сервер создан (По времени UTC +0)", value = ctx.guild.created_at.strftime("%d.%m.%Y\n%H:%M:%S"))
+    embed.add_field(name = "Роль бота:", value = ctx.guild.self_role.mention)
+    if public == None:
+        embed.add_field(name = "Канал для публичных обновлений:", value = 'Нету')
+    else:
+        embed.add_field(name = "Канал для публичных обновлений:", value = ctx.guild.public_updates_channel)
+    if rules == None:
+        embed.add_field(name = "Канал правил:", value = 'Нету')
+    else:
+        embed.add_field(name = "Канал правил:", value = 'Нету')
+    embed.add_field(name = "Уровень сервера", value = ctx.guild.premium_tier)
+    embed.add_field(name = "Приглашения", value = len(await ctx.guild.invites()))
+    embed.add_field(name = "Бусты", value = ctx.guild.premium_subscription_count)
+    embed.add_field(name = "Роль бустеров", value = ctx.guild.premium_subscriber_role)
+    embed.add_field(name = "Владелец", value = ctx.guild.owner.mention)
+    embed.add_field(name = "ID Владельца", value = ctx.guild.owner_id)
+    embed.add_field(name = "Бот", value = ctx.guild.me.mention)
+    if icon:
+        embed.set_thumbnail(url = icon)
+    if BannerURl:
+        embed.set_image(url = BannerURl)
+    await ctx.response.send_message(embed=embed)
 @bot.command()
 async def ver(ctx):
     await ctx.reply(f"My ver " + settings['version'] + "!")
+@bot.slash_command(description='Версия бота')
+async def ver(inter):
+    await inter.response.send_message(f"My ver " + settings['version'] + "!")
 @bot.command() # Не передаём аргумент pass_context, так как он был нужен в старых версиях.
 async def hello(ctx): # Создаём функцию и передаём аргумент ctx.
     author = ctx.message.author # Объявляем переменную author и записываем туда информацию об авторе.
@@ -986,11 +1110,11 @@ class Helpbl(discord.ui.View):
         self, button: discord.ui.Button, interaction: discord.MessageInteraction
     ):
         await interaction.response.send_message("Смотри ты получиш особенную роль на дискорд сервере \n и это поможет нам разрабатывать бота! \n Duino-coin: Mordsdima \n также чтобы получить роль донатера на нашем сервере напиши в личку создателя и кинь скрин что это действительно вы! \n Discord: TheDiman#2022", ephemeral=True)
-@bot.command()
-async def buttons(ctx):
+#@bot.command()
+#async def buttons(ctx):
 
     # Sends a message with a row of buttons.
-    await ctx.send("Here are some buttons!", view=Helpbl())
+    #await ctx.send("Here are some buttons!", view=Helpbl())
 
     # This is how the command would look like: https://i.imgur.com/ZYdX1Jw.png
 
@@ -1004,8 +1128,8 @@ async def on_ready():
 
 @bot.command(pass_context=True)
 @commands.has_permissions(administrator=True)
-async def ban(ctx, member: discord.Member, *, reason):
-    
+async def ban(ctx, member, *, reason):
+    print(type(member))
     await member.ban(reason=reason)
     await ctx.channel.purge(limit=0)
     emb = discord.Embed(color=344462)
@@ -1163,6 +1287,40 @@ async def mute(ctx, member: discord.Member=None, time:str=None, reason=None):
 
     except discord.HTTPException:
         return
+@bot.slash_command(description='раз мьют')
+async def unmute(ctx, member: discord.Member=None):
+    ctx.send = ctx.response.send_message
+    if not member:
+        Embed = discord.Embed(description = ':x: **Ошибка! Вы не указали пользователя**\n**Аргументы данной команды**\n**[] обязательный аргумент**\n\n**Gides!unmute [участник]**', color=0x00008b)
+        await ctx.send(embed = Embed)
+        await ctx.message.add_reaction("<:error:925385765188419604>")
+        return
+    if member == ctx.author:
+        Embed = discord.Embed(description = ':x: **Ошибка! Вы не можете размутить себя**', color=0x00008b)
+        await ctx.send(embed = Embed)
+        await ctx.message.add_reaction("<:error:925385765188419604>")
+        return
+    if member.top_role >= ctx.author.top_role:
+        Embed = discord.Embed(description = ':x: **Ошибка! Вы не можете размутить участника с более высокой ролью**', color=0x00008b)
+        await ctx.send(embed = Embed)
+        await ctx.message.add_reaction("<:error:925385765188419604>")
+        return
+    if not ctx.author.guild_permissions.manage_messages:
+        Embed = discord.Embed(description = ':x: **Ошибка! У вас недостаточно прав**', color=0x00008b)
+        await ctx.send(embed = Embed)
+        await ctx.message.add_reaction("<:error:925385765188419604>")
+        return
+    try:
+        mutedRole = discord.utils.get(ctx.guild.roles, name="MutedBB")
+        await member.remove_roles(mutedRole)
+        embed = discord.Embed(description= f":white_check_mark:|{member.mention} был размучен\nМодератор: {ctx.author.mention}", color=discord.Color.green())
+        await ctx.send(embed=embed)
+        await ctx.message.add_reaction("<:succesfully:925385120280612864>")
+    except discord.Forbidden:
+        return
+
+    except discord.HTTPException:
+        return
 @bot.command()
 async def unmute(ctx, member: discord.Member=None):
     if not member:
@@ -1201,13 +1359,32 @@ async def invite(ctx):
     emb = discord.Embed(title = 'Инвайт бота', description='Инвайт бота: https://discord.com/api/oauth2/authorize?client_id=935590256093331526&permissions=8&scope=bot', color=discord.Color.orange())
     emb.add_field(name = 'Сервер', value = 'Ссылка на сервер бота! : https://discord.gg/bzk5MRDREB')
     await ctx.send(embed = emb)
-
+@bot.slash_command(description='инвайт на сервер и инвайт бота ничего особеного')
+async def invite(ctx):
+    emb = discord.Embed(title = 'Инвайт бота', description='Инвайт бота: https://discord.com/api/oauth2/authorize?client_id=935590256093331526&permissions=8&scope=bot', color=discord.Color.orange())
+    emb.add_field(name = 'Сервер', value = 'Ссылка на сервер бота! : https://discord.gg/bzk5MRDREB')
+    await ctx.response.send_message(embed = emb)
 @bot.command(pass_context=False)
 async def ping(ctx):
   # Вывод задержки в чат с помощью команды .пинг
   await ctx.send('Пинг: {0}'.format(bot.latency)) 
+@bot.slash_command(pass_context=False)
+async def ping(ctx):
+  # Вывод задержки в чат с помощью команды .пинг
+  await ctx.response.send_message('Понг! \nПинг: {0}'.format(bot.latency)) 
 @bot.group(invoke_without_command=True)
 async def help(ctx):
+    em = discord.Embed(title = "help", description = "используйте !help <Команда>")
+    em.add_field(name = "Модерация!", value = "Выберете из списка `Модерация`")
+    em.add_field(name = "Веселое!", value = "Выберете из списка `Веселое`")
+    em.add_field(name = "Экономика", value = "Выберете из списка `Экономика`")    
+
+
+
+    await ctx.send(embed = em, view=Helpbl())
+@bot.slash_command(description='Хелп хелп обычный', name='help')
+async def help_slash(ctx):
+    ctx.send = ctx.response.send_message
     em = discord.Embed(title = "help", description = "используйте !help <Команда>")
     em.add_field(name = "Модерация!", value = "Выберете из списка `Модерация`")
     em.add_field(name = "Веселое!", value = "Выберете из списка `Веселое`")
@@ -1241,37 +1418,82 @@ async def fox(ctx):
     embed = discord.Embed(color = 0xff9900, title = 'Разная лисичка') # Создание Embed'a
     embed.set_image(url = json_data['link']) # Устанавливаем картинку Embed'a
     await ctx.send(embed = embed) # Отправляем Embed
+@bot.slash_command(description='Команда из серии рандом апи')
+async def fox(ctx):
+    ctx.send = ctx.response.send_message
+    response = requests.get('https://some-random-api.ml/img/fox') # Get-запрос
+    json_data = json.loads(response.text) # Извлекаем JSON
+
+    embed = discord.Embed(color = 0xff9900, title = 'Разная лисичка') # Создание Embed'a
+    embed.set_image(url = json_data['link']) # Устанавливаем картинку Embed'a
+    await ctx.send(embed = embed) # Отправляем Embed
 @bot.command()
 async def blue_avatar(ctx):
     embed = discord.Embed(title="Синяя аватарка", description="нету :(", color=0x00ff00) #creates embed
     file = discord.File("blue.png", filename="blue.png")
     embed.set_image(url="attachment://blue.png")
     await ctx.send(file=file, embed=embed)
+@bot.slash_command(description='Самая стандарт синяя ава!')
+async def blue_avatar(ctx):
+    embed = discord.Embed(title="Синяя аватарка", description="нету :(", color=0x00ff00) #creates embed
+    file = discord.File("blue.png", filename="blue.png")
+    embed.set_image(url="attachment://blue.png")
+    await ctx.response.send_message(file=file, embed=embed)
 @bot.command()
 async def yellow_avatar(ctx):
     embed = discord.Embed(title="Желтая аватарка", description="нету :(", color=0x00ff00) #creates embed
     file = discord.File("yellow.png", filename="yellow.png")
     embed.set_image(url="attachment://yellow.png")
     await ctx.send(file=file, embed=embed)
+@bot.slash_command(description='охх желтая ава')
+async def yellow_avatar(ctx):
+    embed = discord.Embed(title="Желтая аватарка", description="нету :(", color=0x00ff00) #creates embed
+    file = discord.File("yellow.png", filename="yellow.png")
+    embed.set_image(url="attachment://yellow.png")
+    await ctx.response.send_message(file=file, embed=embed)
 @bot.command()
 async def multi_avatar(ctx):
     embed = discord.Embed(title="Мульти аватарка", description="нету :(", color=0x00ff00) #creates embed
     file = discord.File("multi.gif", filename="multi.gif")
     embed.set_image(url="attachment://multi.gif")
     await ctx.send(file=file, embed=embed)
+@bot.slash_command(description='мульти ава')
+async def multi_avatar(ctx):
+    embed = discord.Embed(title="Мульти аватарка", description="нету :(", color=0x00ff00) #creates embed
+    file = discord.File("multi.gif", filename="multi.gif")
+    embed.set_image(url="attachment://multi.gif")
+    await ctx.response.send_message(file=file, embed=embed)
 @bot.command()
 async def red_avatar(ctx):
     embed = discord.Embed(title="Красная аватарка", description="нету :(", color=0x00ff00) #creates embed
     file = discord.File("red.png", filename="red.png")
     embed.set_image(url="attachment://red.png")
     await ctx.send(file=file, embed=embed)
+@bot.slash_command(description='серия авы дс только красная')
+async def red_avatar(ctx):
+    embed = discord.Embed(title="Красная аватарка", description="нету :(", color=0x00ff00) #creates embed
+    file = discord.File("red.png", filename="red.png")
+    embed.set_image(url="attachment://red.png")
+    await ctx.response.send_message(file=file, embed=embed)
 @bot.command()
 async def gray_avatar(ctx):
     embed = discord.Embed(title="Серая аватарка", description="нету :(", color=0x00ff00) #creates embed
     file = discord.File("gray.png", filename="gray.png")
     embed.set_image(url="attachment://gray.png")
     await ctx.send(file=file, embed=embed)
+@bot.slash_command(description='Серая ава дс')
+async def gray_avatar(ctx):
+    embed = discord.Embed(title="Серая аватарка", description="нету :(", color=0x00ff00) #creates embed
+    file = discord.File("gray.png", filename="gray.png")
+    embed.set_image(url="attachment://gray.png")
+    await ctx.response.send_message(file=file, embed=embed)
 @bot.command()
+async def green_avatar(ctx):
+    embed = discord.Embed(title="Зеленая аватарка", description="нету :(", color=0x00ff00) #creates embed
+    file = discord.File("green.png", filename="green.png")
+    embed.set_image(url="attachment://green.png")
+    await ctx.send(file=file, embed=embed)
+@bot.slash_command(description='зеленая ава')
 async def green_avatar(ctx):
     embed = discord.Embed(title="Зеленая аватарка", description="нету :(", color=0x00ff00) #creates embed
     file = discord.File("green.png", filename="green.png")
@@ -1283,8 +1505,23 @@ async def pink_avatar(ctx):
     file = discord.File("pink.png", filename="pink.png")
     embed.set_image(url="attachment://pink.png")
     await ctx.send(file=file, embed=embed)
+@bot.slash_command(description='розовая стандартная аватарка!')
+async def pink_avatar(ctx):
+    embed = discord.Embed(title="Розовая аватарка", description="нету :(", color=0x00ff00) #creates embed
+    file = discord.File("pink.png", filename="pink.png")
+    embed.set_image(url="attachment://pink.png")
+    await ctx.send(file=file, embed=embed)
 @bot.command()
 async def dog(ctx):
+    response = requests.get('https://some-random-api.ml/img/dog') # Get-запрос
+    json_data = json.loads(response.text) # Извлекаем JSON
+
+    embed = discord.Embed(color = 0xff9900, title = 'Разные собаки') # Создание Embed'a
+    embed.set_image(url = json_data['link']) # Устанавливаем картинку Embed'a
+    await ctx.send(embed = embed) # Отправляем Embed
+@bot.slash_command()
+async def dog(ctx):
+    ctx.send = ctx.response.send_message
     response = requests.get('https://some-random-api.ml/img/dog') # Get-запрос
     json_data = json.loads(response.text) # Извлекаем JSON
 
@@ -1299,8 +1536,26 @@ async def cat(ctx):
     embed = discord.Embed(color = 0xff9900, title = 'Разные коты') # Создание Embed'a
     embed.set_image(url = json_data['link']) # Устанавливаем картинку Embed'a
     await ctx.send(embed = embed) # Отправляем Embed
+@bot.slash_command(description='Рандомный кот....')
+async def cat(ctx):
+    ctx.send = ctx.response.send_message
+    response = requests.get('https://some-random-api.ml/img/cat') # Get-запрос
+    json_data = json.loads(response.text) # Извлекаем JSON
+
+    embed = discord.Embed(color = 0xff9900, title = 'Разные коты') # Создание Embed'a
+    embed.set_image(url = json_data['link']) # Устанавливаем картинку Embed'a
+    await ctx.send(embed = embed) # Отправляем Embed
 @bot.command()
 async def panda(ctx):
+    response = requests.get('https://some-random-api.ml/img/panda') # Get-запрос
+    json_data = json.loads(response.text) # Извлекаем JSON
+
+    embed = discord.Embed(color = 0xff9900, title = 'Разные пандочки') # Создание Embed'a
+    embed.set_image(url = json_data['link']) # Устанавливаем картинку Embed'a
+    await ctx.send(embed = embed) # Отправляем Embed
+@bot.slash_command(description='Рандомная панда')
+async def panda(ctx):
+    ctx.send = ctx.response.send_message
     response = requests.get('https://some-random-api.ml/img/panda') # Get-запрос
     json_data = json.loads(response.text) # Извлекаем JSON
 
@@ -1317,6 +1572,15 @@ async def meme(ctx):
     embed.set_image(url = json_data['image']) # Устанавливаем картинку Embed'a
 
     await ctx.send(embed = embed) # Отправляем Embed
+@bot.slash_command(description='Показывает мемчики (спасибо some-random-api)')
+async def meme(ctx):
+    response = requests.get('https://some-random-api.ml/meme') # Get-запрос
+    json_data = json.loads(response.text) # Извлекаем JSON
+
+    embed = discord.Embed(color = 0xff9900, title = 'Мемы!', description = json_data['caption']) # Создание Embed'a
+    embed.set_image(url = json_data['image']) # Устанавливаем картинку Embed'a
+
+    await ctx.response.send_message(embed = embed) # Отправляем Embed
 class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -1354,7 +1618,19 @@ class Music(commands.Cog):
             )
 
         await ctx.send(f"Now playing: {player.title}")
+    @commands.slash_command(description='Играет музыку')
+    async def play(self, ctx, *, url):
+        """Plays from a url (almost anything youtube_dl supports)"""
+        if not url:
+            await ctx.response.send_message('Нужна сыллка!')
+            return
+        async with ctx.response.defer():
+            player = await YTDLSource.from_url(url, loop=self.bot.loop)
+            ctx.voice_client.play(
+                player, after=lambda e: print(f"Player error: {e}") if e else None
+            )
 
+        await ctx.response.send_message(f"Now playing: {player.title}")
     @commands.command()
     async def stream(self, ctx, *, url):
         """Streams from a url (same as yt, but doesn't predownload)"""
@@ -1366,7 +1642,17 @@ class Music(commands.Cog):
             )
 
         await ctx.send(f"Now playing: {player.title}")
+    @commands.slash_command(description='Играет музон из стрима')
+    async def stream(self, ctx, *, url):
+        """Streams from a url (same as yt, but doesn't predownload)"""
 
+        async with ctx.response.defer():
+            player = await YTDLSource.from_url(url, loop=self.bot.loop, stream=True)
+            ctx.voice_client.play(
+                player, after=lambda e: print(f"Player error: {e}") if e else None
+            )
+
+        await ctx.response.send_message(f"Now playing: {player.title}")
     @commands.command()
     async def volume(self, ctx, volume: int):
         """Changes the player's volume"""
@@ -1376,13 +1662,25 @@ class Music(commands.Cog):
 
         ctx.voice_client.source.volume = volume / 100
         await ctx.send(f"Changed volume to {volume}%")
+    @commands.slash_command(description='Изменение уровня музыки')
+    async def volume(self, ctx, volume: int):
+        """Changes the player's volume"""
 
+        if ctx.voice_client is None:
+            return await ctx.send("Not connected to a voice channel.")
+
+        ctx.voice_client.source.volume = volume / 100
+        await ctx.send(f"Changed volume to {volume}%")
     @commands.command()
     async def stop(self, ctx):
         """Stops and disconnects the bot from voice"""
 
         await ctx.voice_client.disconnect()
+    @commands.slash_command(description='Остановка музона ')
+    async def stop(self, ctx):
+        """Stops and disconnects the bot from voice"""
 
+        await ctx.voice_client.disconnect()
     @playnorelease.before_invoke
     @play.before_invoke
     @stream.before_invoke
@@ -1401,11 +1699,6 @@ bot.add_cog(Music(bot))
 for filename in os.listdir("./cogs/"):
     if filename.endswith(".py"):
         bot.load_extension(f"cogs.{filename[:-3]}")
-while True:
-    try:
-        bot.run(settings['token']) # Обращаемся к словарю settings с ключом token, для получения токена
-        start = True
-        if start == True:
-            continue
-    except:
-        pass
+
+bot.run(settings['token']) # Обращаемся к словарю settings с ключом token, для получения токена
+        
