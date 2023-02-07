@@ -1,4 +1,4 @@
-disnake[voice]==2.1.2
+disnake[voice]==2.2.0
 
 
 requests
