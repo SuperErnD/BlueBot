@@ -29,7 +29,7 @@ import json
 import lvls
 import motor.motor_asyncio
 
-cluster = motor.motor_asyncio.AsyncIOMotorClient('mongodb://mongo:4tuf0leqvNuG020Vb7WK@containers-us-west-29.railway.app:5998')
+cluster = motor.motor_asyncio.AsyncIOMotorClient('mongodb://mongo:UpfMKN5YsL0BzR3cbOrq@containers-us-west-29.railway.app:5998') 
 economy = cluster['ecodb']['users']
 database = cluster['Logs']
 shop = cluster['Phones']['shop']
