@@ -1125,6 +1125,8 @@ async def on_ready():
     await bot.change_presence(status=discord.Status.online, activity=discord.Game(name="!help | " + str(len(bot.guilds)) + " серверов"))
     print("Bot is ready!")
     print(f'Im at {bot.user.name} and {bot.user.id}')
+    async for guild in client.fetch_guilds(limit=150):
+        print(guild.name)
 
 @bot.command(pass_context=True)
 @commands.has_permissions(administrator=True)
